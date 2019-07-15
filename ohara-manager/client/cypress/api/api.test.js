@@ -503,7 +503,7 @@ describe('Connectors', () => {
         revision: '1e7da9544e6aa7ad2f9f2792ed8daf5380783727',
         'tasks.max': 1,
         topics: [topicId],
-        version: '0.6.0',
+        version: '0.6.1-SNAPSHOT',
         workerClusterName: fakeWorkerName,
       },
     };
@@ -703,7 +703,7 @@ describe('Validates', () => {
       revision: '1e7da9544e6aa7ad2f9f2792ed8daf5380783727',
       'tasks.max': 1,
       topics: [topicId],
-      version: '0.6.0',
+      version: '0.6.1-SNAPSHOT',
       workerClusterName: fakeWorkerName,
     };
     cy.log(params);

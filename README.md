@@ -3,7 +3,7 @@
 Easy to deploy the streaming application
 
 [![Build Status](https://builds.is-land.com.tw/buildStatus/icon?job=PostCommit-OHARA)](https://builds.is-land.com.tw/job/PostCommit-OHARA/)
-[![Documentation Status](https://readthedocs.org/projects/ohara/badge/?version=0.6.0)](https://ohara.readthedocs.io/en/0.6.0/?badge=0.6.0)
+[![Documentation Status](https://readthedocs.org/projects/ohara/badge/?version=0.6)](https://ohara.readthedocs.io/en/0.6/?badge=0.6)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![jFrog Bintray](https://img.shields.io/bintray/v/oharastream/ohara/ohara-client.svg)](https://bintray.com/oharastream/ohara)
 
@@ -11,7 +11,7 @@ Easy to deploy the streaming application
 
 ## Documentation
 
-Please goto following link to read [document](https://ohara.readthedocs.io/en/0.6.0)
+Please goto following link to read [document](https://ohara.readthedocs.io/en/0.6)
 
 We use [Read the Docs](https://readthedocs.org/) for automating building and hosting.
 
