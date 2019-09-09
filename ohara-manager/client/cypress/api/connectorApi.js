@@ -161,7 +161,7 @@ describe('Connector API', () => {
         revision: '1e7da9544e6aa7ad2f9f2792ed8daf5380783727',
         'tasks.max': 1,
         topicKeys: [{ group: 'default', name: topicName }],
-        version: '0.7.1',
+        version: '0.7.2-SNAPSHOT',
         workerClusterName,
       },
     };

@@ -18,7 +18,7 @@ version: '3.3'
 services:
 
   configurator:
-    image: oharastream/configurator:${TAG:-0.7.1}
+    image: oharastream/configurator:${TAG:-0.7.2-SNAPSHOT}
     hostname: configurator
     command: ["--port", "12345"]
     ports:
@@ -34,7 +34,7 @@ services:
 #      - "node02:192.168.56.202"
 
   ftp:
-    image: oharastream/backend:${TAG:-0.7.1}
+    image: oharastream/backend:${TAG:-0.7.2-SNAPSHOT}
     hostname: ftp
     command: ["com.island.ohara.testing.service.FtpServer",
               "--homeFolder", "/tmp/ohara_ftpserver",
