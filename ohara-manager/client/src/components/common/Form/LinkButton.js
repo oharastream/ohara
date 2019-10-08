@@ -20,19 +20,26 @@ import styled from 'styled-components';
 
 const ButtonWrapper = styled.button`
   border: none;
-  color: ${props => props.theme.blue};
+  color: ${props => (props.disabled ? props.theme.gray : props.theme.blue)};
   background-color: transparent;
 
   &:hover {
-    color: ${props => props.theme.blueHover};
+    color: ${props =>
+      props.disabled ? props.theme.gray : props.theme.blueHover};
+    cursor: ${props => (props.disabled ? 'default' : 'pointer')};
   }
 `;
 
-const LinkButton = ({ handleClick, children }) => {
-  return <ButtonWrapper onClick={handleClick}>{children}</ButtonWrapper>;
+const LinkButton = ({ handleClick, children, disabled = false }) => {
+  return (
+    <ButtonWrapper disabled={disabled} onClick={handleClick}>
+      {children}
+    </ButtonWrapper>
+  );
 };
 
 LinkButton.propTypes = {
+  disabled: PropTypes.bool,
   children: PropTypes.any,
   handleClick: PropTypes.func,
 };

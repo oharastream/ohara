@@ -28,6 +28,7 @@ const Button = props => {
     size = 'medium',
     onClick,
     testId,
+    disabled = false,
   } = props;
 
   return (
@@ -39,6 +40,7 @@ const Button = props => {
       onClick={onClick}
       size={size}
       data-testid={testId}
+      disabled={disabled}
     >
       {text}
     </MuiButton>
@@ -54,6 +56,7 @@ Button.propTypes = {
   onClick: PropTypes.func,
   component: PropTypes.string,
   testId: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default Button;

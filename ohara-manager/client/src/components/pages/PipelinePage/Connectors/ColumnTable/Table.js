@@ -31,6 +31,7 @@ const Table = props => {
     handleColumnRowUp,
     handleColumnRowDown,
     parentValues,
+    disabled,
   } = props;
 
   const _data = isNull(data) ? [] : data;
@@ -51,6 +52,7 @@ const Table = props => {
               <td>{order}</td>
               <td>
                 <select
+                  disabled={disabled}
                   onChange={e => handleTypeChange(e, order)}
                   value={currType}
                 >
@@ -63,6 +65,7 @@ const Table = props => {
               <td>{newName}</td>
               <td>
                 <LinkButton
+                  disabled={disabled}
                   handleClick={e =>
                     handleColumnRowUp(e, { order, parentValues })
                   }
@@ -72,6 +75,7 @@ const Table = props => {
               </td>
               <td>
                 <LinkButton
+                  disabled={disabled}
                   handleClick={e =>
                     handleColumnRowDown(e, { order, parentValues })
                   }
@@ -81,6 +85,7 @@ const Table = props => {
               </td>
               <td>
                 <LinkButton
+                  disabled={disabled}
                   handleClick={e => handleDeleteRowModalOpen(e, order)}
                 >
                   <i className="far fa-trash-alt" />
@@ -109,6 +114,7 @@ Table.propTypes = {
   handleColumnRowUp: PropTypes.func.isRequired,
   handleColumnRowDown: PropTypes.func.isRequired,
   handleDeleteRowModalOpen: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired,
   parentValues: PropTypes.object,
 };
 

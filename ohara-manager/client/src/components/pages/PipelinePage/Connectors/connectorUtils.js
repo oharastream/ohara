@@ -722,6 +722,7 @@ export const renderer = props => {
               handleColumnRowDelete={handleColumnRowDelete}
               handleColumnRowUp={handleColumnRowUp}
               handleColumnRowDown={handleColumnRowDown}
+              disabled={!editable || isRunning}
             />
           </FormControl>
         );

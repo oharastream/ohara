@@ -38,6 +38,7 @@ const ColumnTable = props => {
     handleColumnRowDown,
     parentValues,
     handleTypeChange,
+    disabled,
   } = props;
 
   const handleNewRowModalOpen = e => {
@@ -88,6 +89,7 @@ const ColumnTable = props => {
         size="small"
         data-testid="new-row-btn"
         onClick={handleNewRowModalOpen}
+        disabled={disabled}
       />
 
       <NewRowModal
@@ -116,6 +118,7 @@ const ColumnTable = props => {
         handleColumnRowUp={handleColumnRowUp}
         handleColumnRowDown={handleColumnRowDown}
         parentValues={parentValues}
+        disabled={disabled}
       />
     </>
   );
@@ -139,6 +142,7 @@ ColumnTable.propTypes = {
   handleColumnRowDelete: PropTypes.func.isRequired,
   handleColumnRowUp: PropTypes.func.isRequired,
   handleColumnRowDown: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired,
   parentValues: PropTypes.object,
 };
 
