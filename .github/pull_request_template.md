@@ -1,6 +1,6 @@
 ### Checklist
-- [ ] [Review Contribution Guidelines](https://github.com/oharastream/ohara/blob/master/CONTRIBUTING.md)
-- [ ] Add Reviewers (see [Authors](https://github.com/oharastream/ohara#authors))
+- [ ] [Review Contribution Guidelines](https://ohara.readthedocs.io/en/latest/contributing.html)
+- [ ] Add Reviewers (see [Authors](https://github.com/oharastream/ohara#ohara-team))
 - [ ] Add Assignees (of course, you are the assignee by default!)
 - [ ] DON'T set a Milestone
 - [ ] DON'T add any labels (PR labels will be added automatically by Jenkins)
