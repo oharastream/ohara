@@ -31,4 +31,15 @@ const nameValidate = params => {
   return errors;
 };
 
-export { nameValidate };
+const numberValidate = params => {
+  const { values, keys = [] } = params;
+  let errors = {};
+  keys.forEach(key => {
+    if (get(values, key) <= 0) {
+      errors[key] = 'Only digits larger than zero can be entered';
+    }
+  });
+  return errors;
+};
+
+export { nameValidate, numberValidate };

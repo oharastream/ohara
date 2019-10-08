@@ -26,7 +26,7 @@ import { InputField } from 'components/common/Mui/Form';
 import useSnackbar from 'components/context/Snackbar/useSnackbar';
 import * as useApi from 'components/controller';
 import * as URL from 'components/controller/url';
-import { nameValidate } from 'utils/validate';
+import { nameValidate, numberValidate } from 'utils/validate';
 
 const TopicNewModal = props => {
   const [isSaving, setIsSaving] = useState(false);
@@ -76,11 +76,22 @@ const TopicNewModal = props => {
     }
   };
 
+  const Validate = values => {
+    const error = {
+      ...nameValidate({ values, keys: ['name'] }),
+      ...numberValidate({
+        values,
+        keys: ['numberOfPartitions', 'numberOfReplications'],
+      }),
+    };
+    return error;
+  };
+
   return (
     <Form
       onSubmit={onSubmit}
       initialValues={{}}
-      validate={values => nameValidate({ values, keys: ['name'] })}
+      validate={values => Validate(values)}
       render={({ handleSubmit, form, submitting, pristine, invalid }) => {
         return (
           <Dialog
@@ -116,7 +127,11 @@ const TopicNewModal = props => {
                   component={InputField}
                   type="number"
                   placeholder="1"
-                  inputProps={{ 'data-testid': 'partitions-input' }}
+                  inputProps={{
+                    'data-testid': 'partitions-input',
+                    min: '1',
+                    step: '1',
+                  }}
                 />
               </DialogContent>
               <DialogContent>
@@ -127,7 +142,11 @@ const TopicNewModal = props => {
                   component={InputField}
                   type="number"
                   placeholder="1"
-                  inputProps={{ 'data-testid': 'replications-input' }}
+                  inputProps={{
+                    'data-testid': 'replications-input',
+                    min: '1',
+                    step: '1',
+                  }}
                 />
               </DialogContent>
             </form>
