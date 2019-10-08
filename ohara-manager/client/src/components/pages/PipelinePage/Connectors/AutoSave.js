@@ -18,7 +18,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import diff from 'deep-diff';
 import { FormSpy } from 'react-final-form';
-import { debounce, isNull } from 'lodash';
+import { debounce } from 'lodash';
 
 class AutoSave extends React.Component {
   static propTypes = {
@@ -42,8 +42,8 @@ class AutoSave extends React.Component {
 
     // If the connector is running, we shouldn't update since it will cause
     // server side error
-    const shouldUpdate =
-      difference && difference.length && isNull(connectorState);
+    const isRunning = Boolean(connectorState);
+    const shouldUpdate = difference && difference.length && !isRunning;
 
     if (shouldUpdate) {
       // values have changed

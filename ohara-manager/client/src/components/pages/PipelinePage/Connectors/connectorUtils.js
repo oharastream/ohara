@@ -220,8 +220,13 @@ export const useFetchConnectors = props => {
   const [state, setState] = useState(null);
   const [configs, setConfigs] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const { group } = props.pipeline;
-  const { connectorName } = props.match.params;
+  const {
+    graph,
+    pipeline,
+    match: { params },
+  } = props;
+  const { group } = pipeline;
+  const { connectorName } = params;
 
   useEffect(() => {
     const fetchConnector = async () => {
@@ -229,8 +234,12 @@ export const useFetchConnectors = props => {
       const result = get(res, 'data.result', null);
       if (result) {
         const { settings, tasksStatus } = result;
-        const { topicKeys } = settings;
-        const state = get(result, 'status.state', null);
+        const { topicKeys, name } = settings;
+
+        // In order to sync the `running state` of the connector, we're
+        // getting state from pipeline `graph` instead of the connector itself
+        const currentConnector = graph.find(g => g.name === name);
+        const { state } = currentConnector;
         const topicName = get(topicKeys, '[0].name', '');
 
         const _settings = changeToken({
@@ -253,7 +262,7 @@ export const useFetchConnectors = props => {
     };
 
     fetchConnector();
-  }, [connectorName, group]);
+  }, [connectorName, graph, group]);
   return [state, setState, configs, setConfigs, tasks];
 };
 
