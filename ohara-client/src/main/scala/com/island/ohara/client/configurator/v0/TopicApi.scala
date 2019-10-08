@@ -265,8 +265,8 @@ object TopicApi {
         override def write(obj: Updating): JsValue = JsObject(obj.settings)
       })
       .rejectEmptyString()
-      .rejectNegativeNumber(NUMBER_OF_PARTITIONS_KEY)
-      .rejectNegativeNumber(NUMBER_OF_REPLICATIONS_KEY)
+      .requirePositiveNumber(NUMBER_OF_PARTITIONS_KEY)
+      .requirePositiveNumber(NUMBER_OF_REPLICATIONS_KEY)
       .refine
 
   final class Creation private[TopicApi] (val settings: Map[String, JsValue])
@@ -299,8 +299,8 @@ object TopicApi {
       .nullToInt(NUMBER_OF_REPLICATIONS_KEY, DEFAULT_NUMBER_OF_REPLICATIONS)
       .rejectEmptyString()
       .nullToEmptyObject(TAGS_KEY)
-      .rejectNegativeNumber(NUMBER_OF_PARTITIONS_KEY)
-      .rejectNegativeNumber(NUMBER_OF_REPLICATIONS_KEY)
+      .requirePositiveNumber(NUMBER_OF_PARTITIONS_KEY)
+      .requirePositiveNumber(NUMBER_OF_REPLICATIONS_KEY)
       .refine
 
   import MetricsApi._
