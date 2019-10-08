@@ -22,7 +22,7 @@ import com.island.ohara.common.util.CommonUtils
 import org.junit.Test
 import org.scalatest.Matchers
 import spray.json.{DeserializationException, JsArray, JsString}
-
+import scala.collection.JavaConverters._
 class TestJioData extends OharaTest with Matchers {
 
   @Test
@@ -36,7 +36,17 @@ class TestJioData extends OharaTest with Matchers {
       Cell.of(CommonUtils.randomString(5), 100.asInstanceOf[Float]),
       Cell.of(CommonUtils.randomString(5), 100.asInstanceOf[Double])
     )
-    JioData(row).row shouldBe row
+    val copy = JioData(row).row
+    copy.size shouldBe row.size()
+    row.cells.asScala.foreach { cell =>
+      copy.cell(cell.name()).value() match {
+        case n: java.math.BigDecimal =>
+          // scala BIgDecimal has a friendly equal function
+          BigDecimal(n) shouldBe cell.value()
+        case _ =>
+          copy.cell(cell.name()).value() shouldBe cell.value()
+      }
+    }
   }
 
   @Test

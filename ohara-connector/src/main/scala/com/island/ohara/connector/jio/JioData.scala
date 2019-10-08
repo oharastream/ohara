@@ -18,17 +18,27 @@ package com.island.ohara.connector.jio
 
 import com.island.ohara.common.data.{Cell, Row}
 import spray.json.{DeserializationException, JsBoolean, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
-class JioData(val raw: Map[String, JsValue]) {
+class JioData private (val raw: Map[String, JsValue]) {
 
+  /**
+    * convert this jio data to row.
+    * @return row
+    */
   def row: Row = {
-    val cells: Seq[Cell[_]] = raw.flatMap {
+    val cells: Seq[Cell[_]] = raw.map {
       case (k, v) =>
         v match {
-          case JsNumber(i)  => Some(Cell.of(k, i))
-          case JsString(s)  => Some(Cell.of(k, s))
-          case JsBoolean(b) => Some(Cell.of(k, b))
+          case JsNumber(i) =>
+            Cell.of(
+              k,
+              // we prefer java.BigDecimal as the public code to connector developers is "java" rather than "scala".
+              // Returning scala.BigDecimal may obstruct java developers from using JIO connectors.
+              i.bigDecimal
+            )
+          case JsString(s)  => Cell.of(k, s)
+          case JsBoolean(b) => Cell.of(k, b)
           // in construction we have rejected the unsupported types
-          case _ => None
+          case _ => throw new IllegalArgumentException(s"${v.getClass.getName} is unsupported!!!")
         }
     }.toSeq
     Row.of(cells: _*)
@@ -69,13 +79,22 @@ object JioData {
       .asScala
       .map { cell =>
         cell.name() -> (cell.value() match {
-          case b: Boolean    => JsBoolean(b)
-          case s: String     => JsString(s)
-          case i: Short      => JsNumber(i)
-          case i: Int        => JsNumber(i)
-          case i: Long       => JsNumber(i)
-          case i: Float      => JsNumber(i)
-          case i: Double     => JsNumber(i)
+          case b: Boolean => JsBoolean(b)
+          case s: String  => JsString(s)
+          case i: Short   => JsNumber(i)
+          case i: Int     => JsNumber(i)
+          case i: Long    => JsNumber(i)
+          case i: Float   => JsNumber(i)
+          case i: Double  => JsNumber(i)
+
+          /**
+            * the BigDecimal used by JsonIn is java implementation.
+            */
+          case i: java.math.BigDecimal => JsNumber(i)
+
+          /**
+            * the is the channel of communication between java and scala :)
+            */
           case i: BigDecimal => JsNumber(i)
           case _             => throw new IllegalArgumentException(s"${cell.value().getClass.getName} is unsupported!!!")
         })
