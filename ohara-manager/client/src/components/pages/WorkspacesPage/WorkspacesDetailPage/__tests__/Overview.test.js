@@ -32,7 +32,11 @@ afterEach(cleanup);
 // Skip the tests for now. We should mock the XHR requests in the test
 describe('<Overview />', () => {
   const brokerClusterName = generate.serviceName();
-  const topics = generate.topics({ brokerClusterName });
+  const workerClusterName = generate.serviceName();
+  const topics = generate.topics({
+    brokerClusterName,
+    workspaceName: workerClusterName,
+  });
   const broker = generate.broker();
 
   const zookeeper = generate.zookeeper();
@@ -51,7 +55,7 @@ describe('<Overview />', () => {
     },
     worker: {
       settings: {
-        name: generate.name(),
+        name: workerClusterName,
         clientPort: generate.port(),
         jmxPort: generate.port(),
         nodeNames: [generate.serviceName()],
@@ -76,7 +80,7 @@ describe('<Overview />', () => {
   };
 
   jest.spyOn(useApi, 'useFetchApi').mockImplementation(url => {
-    if (url === `${URL.TOPIC_URL}?group=${props.worker.settings.name}`) {
+    if (url === URL.TOPIC_URL) {
       return {
         data: {
           data: {

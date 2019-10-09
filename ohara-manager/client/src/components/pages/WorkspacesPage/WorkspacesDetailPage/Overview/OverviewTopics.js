@@ -33,10 +33,13 @@ import * as URL from 'components/controller/url';
 const OverviewTopics = props => {
   const { handleRedirect, workerName } = props;
   const { data: topicsRes, isLoading: fetchingTopics } = useApi.useFetchApi(
-    `${URL.TOPIC_URL}?group=${workerName}`,
+    `${URL.TOPIC_URL}`,
   );
 
-  const topics = get(topicsRes, 'data.result', []);
+  const topics = get(topicsRes, 'data.result', []).filter(
+    topic => topic.group === `${workerName}`,
+  );
+
   return (
     <>
       <TabHeading>

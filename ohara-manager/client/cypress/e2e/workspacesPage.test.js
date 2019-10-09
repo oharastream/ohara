@@ -31,7 +31,7 @@ describe('WorkspacesPage', () => {
     cy.route('GET', 'api/workers/*').as('getWorker');
     cy.route('GET', 'api/brokers/*').as('getBroker');
     cy.route('GET', 'api/zookeepers/*').as('getZookeeper');
-    cy.route('GET', 'api/topics?*').as('getTopics');
+    cy.route('GET', 'api/topics').as('getTopics');
     cy.route('GET', 'api/pipelines').as('getPipelines');
     cy.route('PUT', 'api/workers/*/stop').as('stopWorker');
     cy.route('PUT', 'api/workers/*/start').as('startWorker');

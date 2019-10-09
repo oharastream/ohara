@@ -93,13 +93,17 @@ const Topics = props => {
     );
   };
 
-  const getUsedByPipeline = (pipelines, topicName) => {
+  const getUsedByPipeline = (pipelines, topicName, workerClusterName) => {
     let usedByWhichPipeline = '';
 
     if (!isEmpty(pipelines)) {
-      const targetPipeline = pipelines.find(pipeline =>
-        pipeline.objects.some(object => object.name === topicName),
-      );
+      const targetPipeline = pipelines
+        .filter(
+          pipeline => pipeline.tags.workerClusterName === workerClusterName,
+        )
+        .find(pipeline =>
+          pipeline.objects.some(object => object.name === topicName),
+        );
 
       if (targetPipeline) {
         const { name } = targetPipeline;
@@ -118,7 +122,11 @@ const Topics = props => {
 
   const rows = topics.map(topic => {
     const pipelines = get(pipelinesResponse, 'data.result', []);
-    const usedByWhichPipeline = getUsedByPipeline(pipelines, topic.name);
+    const usedByWhichPipeline = getUsedByPipeline(
+      pipelines,
+      topic.name,
+      worker.settings.name,
+    );
 
     const {
       name,

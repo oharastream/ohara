@@ -43,17 +43,19 @@ describe('<Topics />', () => {
         settings: {
           name: generate.name(),
           brokerClusterKey: {
-            name: generate.name(),
-            brokerClusterName,
+            group: generate.name(),
+            name: brokerClusterName,
           },
         },
       },
     };
+
     brokerClusterName = generate.serviceName();
     topics = generate.topics({
       brokerClusterName,
       workspaceName: props.worker.settings.name,
     });
+
     pipelines = [
       {
         name: generate.name(),
@@ -62,7 +64,7 @@ describe('<Topics />', () => {
           { kind: 'topic', name: topics[0].name },
           { kind: 'source', name: 'abc' },
         ],
-        tags: {},
+        tags: { workerClusterName: props.worker.settings.name },
       },
     ];
 

@@ -53,9 +53,13 @@ const PipelineNewTopic = forwardRef((props, ref) => {
       const disabledTopics = [];
 
       topics.forEach(topic => {
-        const shouldBeDisabled = pipelines.some(pipeline => {
-          return pipeline.objects.some(object => object.name === topic.name);
-        });
+        const shouldBeDisabled = pipelines
+          .filter(
+            pipeline => pipeline.tags.workerClusterName === workerClusterName,
+          )
+          .some(pipeline => {
+            return pipeline.objects.some(object => object.name === topic.name);
+          });
 
         if (shouldBeDisabled) {
           disabledTopics.push(topic.name);
@@ -70,7 +74,7 @@ const PipelineNewTopic = forwardRef((props, ref) => {
     };
 
     fetchPipelines();
-  }, [currentTopic, enableAddButton, topics]);
+  }, [currentTopic, enableAddButton, topics, workerClusterName]);
 
   useImperativeHandle(ref, () => ({
     update() {
