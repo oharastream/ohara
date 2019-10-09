@@ -49,9 +49,8 @@ private[route] object CollieUtils {
       .map(
         _.find(_.key == clusterKey)
           .getOrElse(throw new NoSuchClusterException(s"broker cluster:$clusterKey is not a running cluster")))
-      .map { clusterInfo =>
-        (clusterInfo, cleaner.add(brokerCollie.topicAdmin(clusterInfo)))
-      }
+      .flatMap(clusterInfo =>
+        brokerCollie.topicAdmin(clusterInfo).map(topicAdmin => clusterInfo -> cleaner.add(topicAdmin)))
 
   /**
     * find the single running zookeeper cluster. Otherwise, it throws exception

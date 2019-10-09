@@ -65,14 +65,14 @@ private[configurator] class FakeBrokerCollie(node: NodeCollie, bkConnectionProps
         creation.ports
       ))
 
-  override def topicAdmin(cluster: BrokerClusterInfo): TopicAdmin =
-    if (bkConnectionProps == null) {
+  override def topicAdmin(cluster: BrokerClusterInfo)(implicit executionContext: ExecutionContext): Future[TopicAdmin] =
+    if (bkConnectionProps == null) Future.successful {
       if (!clusterCache.containsKey(cluster))
         throw new NoSuchClusterException(s"cluster:${cluster.name} is not running")
       val fake = new FakeTopicAdmin
       val r = fakeAdminCache.putIfAbsent(cluster, fake)
       if (r == null) fake else r
-    } else TopicAdmin(bkConnectionProps)
+    } else Future.successful(TopicAdmin(bkConnectionProps))
 
   override protected def doCreator(executionContext: ExecutionContext,
                                    containerName: String,

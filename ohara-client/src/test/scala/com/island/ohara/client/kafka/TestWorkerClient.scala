@@ -388,33 +388,6 @@ class TestWorkerClient extends With3Brokers3Workers with Matchers {
   }
 
   @Test
-  def testStatusOrNone(): Unit = {
-    val topicKey = TopicKey.of(CommonUtils.randomString(10), CommonUtils.randomString(10))
-    val connectorKey = ConnectorKey.of(CommonUtils.randomString(5), CommonUtils.randomString(5))
-    result(workerClient.statusOrNone(connectorKey)) shouldBe None
-    val response = result(
-      workerClient
-        .connectorCreator()
-        .topicKey(topicKey)
-        .connectorClass(classOf[MyConnector])
-        .connectorKey(connectorKey)
-        .numberOfTasks(1)
-        .settings(Map(MyConnector.DURATION_KEY -> "PT1M1S"))
-        .create())
-    response.name shouldBe connectorKey.connectorNameOnKafka()
-    await(
-      () =>
-        try result(workerClient.statusOrNone(connectorKey)).isDefined
-        catch {
-          case e: Throwable =>
-            // keep looping if kafka slowly sync the status ...
-            if (e.getMessage.contains("No status found for connector")) false
-            else throw e
-      })
-    result(workerClient.delete(connectorKey))
-  }
-
-  @Test
   def nullConnectionProps(): Unit =
     an[NullPointerException] should be thrownBy WorkerClient.builder.connectionProps(null)
 

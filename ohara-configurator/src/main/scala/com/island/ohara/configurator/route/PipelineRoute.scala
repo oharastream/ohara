@@ -32,10 +32,12 @@ import com.island.ohara.common.util.CommonUtils
 import com.island.ohara.configurator.route.hook._
 import com.island.ohara.configurator.store.{DataStore, MeterCache}
 import com.island.ohara.kafka.connector.json.ConnectorDefUtils
+import com.typesafe.scalalogging.Logger
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 private[configurator] object PipelineRoute {
+  private[this] lazy val LOG = Logger(PipelineRoute.getClass)
 
   private[this] def toAbstract(data: ConnectorDescription, clusterInfo: WorkerClusterInfo, workerClient: WorkerClient)(
     implicit executionContext: ExecutionContext,
@@ -60,13 +62,19 @@ private[configurator] object PipelineRoute {
       )
       .flatMap { obj =>
         workerClient
-          .statusOrNone(data.key)
-          .map(_.map { connectorInfo =>
+          .status(data.key)
+          .map { connectorInfo =>
             obj.copy(
               state = Some(connectorInfo.connector.state),
               error = connectorInfo.connector.trace
             )
-          }.getOrElse(obj))
+          }
+          // we don't put this recovery in the final chain since we want to keep the definitions fetched from kafka
+          .recover {
+            case e: Throwable =>
+              LOG.debug(s"failed to fetch obj for $data", e)
+              obj
+          }
       }
 
   private[this] def toAbstract(data: TopicInfo, clusterInfo: BrokerClusterInfo, topicAdmin: TopicAdmin)(

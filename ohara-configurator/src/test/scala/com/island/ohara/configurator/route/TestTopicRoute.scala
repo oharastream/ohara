@@ -37,6 +37,15 @@ class TestTopicRoute extends OharaTest with Matchers {
   private[this] val topicApi = TopicApi.access.hostname(configurator.hostname).port(configurator.port)
 
   private[this] def result[T](f: Future[T]): T = Await.result(f, Duration("20 seconds"))
+
+  @Test
+  def listTopicDeployedOnNonexistentCluster(): Unit = {
+    val topic = result(
+      topicApi.request.brokerClusterKey(ObjectKey.of(CommonUtils.randomString(), CommonUtils.randomString())).create())
+
+    result(topicApi.get(topic.key)).key shouldBe topic.key
+  }
+
   @Test
   def test(): Unit = {
     // test add
@@ -267,7 +276,7 @@ class TestTopicRoute extends OharaTest with Matchers {
 
     val brokerClusterInfo = result(
       BrokerApi.access.hostname(configurator.hostname).port(configurator.port).get(topic.brokerClusterKey))
-    val topicAdmin = configurator.serviceCollie.brokerCollie.topicAdmin(brokerClusterInfo)
+    val topicAdmin = result(configurator.serviceCollie.brokerCollie.topicAdmin(brokerClusterInfo))
     try {
       topicAdmin.delete(topic.key)
       // the topic is removed but we don't throw exception.

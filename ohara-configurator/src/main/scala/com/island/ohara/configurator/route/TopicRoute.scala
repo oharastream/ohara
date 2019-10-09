@@ -50,37 +50,48 @@ private[configurator] object TopicRoute {
 
   /**
     * update the metrics for input topic
-    * @param brokerCluster the broker cluster hosting the topic
     * @param topicInfo topic info
     * @return updated topic info
     */
-  private[this] def updateState(brokerCluster: BrokerClusterInfo, topicInfo: TopicInfo)(
-    implicit meterCache: MeterCache,
-    brokerCollie: BrokerCollie,
-    executionContext: ExecutionContext): Future[TopicInfo] = {
-    val topicAdmin = brokerCollie.topicAdmin(brokerCluster)
-    topicAdmin
-      .exist(topicInfo.key)
-      .flatMap(
-        if (_)
-          topicAdmin
-            .topics()
-            .map(_.find(_.name == topicInfo.key.topicNameOnKafka()).get)
-            .map(_.partitionInfos -> Some(TopicState.RUNNING))
-        else Future.successful(Seq.empty -> None))
-      // pre-close topic admin
-      .map(v =>
-        try v
-        finally Releasable.close(topicAdmin))
-      .map {
-        case (partitions, state) =>
-          topicInfo.copy(
-            partitionInfos = partitions,
-            state = state,
-            metrics = metrics(brokerCluster, topicInfo.key.topicNameOnKafka)
-          )
-      }
-  }
+  private[this] def updateState(topicInfo: TopicInfo)(implicit meterCache: MeterCache,
+                                                      store: DataStore,
+                                                      brokerCollie: BrokerCollie,
+                                                      executionContext: ExecutionContext): Future[TopicInfo] = store
+    .value[BrokerClusterInfo](topicInfo.brokerClusterKey)
+    .flatMap(c => brokerCollie.topicAdmin(c).map(_ -> c))
+    .flatMap {
+      case (topicAdmin, brokerClusterInfo) =>
+        topicAdmin
+          .exist(topicInfo.key)
+          .flatMap(
+            if (_)
+              topicAdmin
+                .topics()
+                .map(_.find(_.name == topicInfo.key.topicNameOnKafka()).get)
+                .map(_.partitionInfos -> Some(TopicState.RUNNING))
+            else Future.successful(Seq.empty -> None))
+          // pre-close topic admin
+          .map(v =>
+            try v
+            finally Releasable.close(topicAdmin))
+          .map {
+            case (partitions, state) =>
+              topicInfo.copy(
+                partitionInfos = partitions,
+                state = state,
+                metrics = metrics(brokerClusterInfo, topicInfo.key.topicNameOnKafka)
+              )
+          }
+    }
+    .recover {
+      case e: Throwable =>
+        LOG.debug(s"failed to fetch stats for $topicInfo", e)
+        topicInfo.copy(
+          partitionInfos = Seq.empty,
+          metrics = Metrics.EMPTY,
+          state = None
+        )
+    }
 
   private[this] def createTopic(topicAdmin: TopicAdmin, topicInfo: TopicInfo)(
     implicit executionContext: ExecutionContext): Future[TopicInfo] =
@@ -104,16 +115,13 @@ private[configurator] object TopicRoute {
                               brokerCollie: BrokerCollie,
                               store: DataStore,
                               executionContext: ExecutionContext): HookOfGet[TopicInfo] = (topicInfo: TopicInfo) =>
-    store.value[BrokerClusterInfo](topicInfo.brokerClusterKey).flatMap(updateState(_, topicInfo))
+    updateState(topicInfo)
 
   private[this] def hookOfList(implicit meterCache: MeterCache,
                                brokerCollie: BrokerCollie,
                                store: DataStore,
                                executionContext: ExecutionContext): HookOfList[TopicInfo] =
-    (topicInfos: Seq[TopicInfo]) =>
-      Future.traverse(topicInfos) { topicInfo =>
-        store.value[BrokerClusterInfo](topicInfo.brokerClusterKey).flatMap(updateState(_, topicInfo))
-    }
+    (topicInfos: Seq[TopicInfo]) => Future.traverse(topicInfos)(updateState)
 
   private[this] def hookOfCreation(implicit brokerCollie: BrokerCollie,
                                    executionContext: ExecutionContext): HookOfCreation[Creation, TopicInfo] =

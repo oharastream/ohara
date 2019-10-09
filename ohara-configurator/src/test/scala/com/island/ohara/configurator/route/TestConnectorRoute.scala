@@ -47,6 +47,17 @@ class TestConnectorRoute extends OharaTest with Matchers {
   }
 
   @Test
+  def listConnectorDeployedOnNonexistentCluster(): Unit = {
+    val connector = result(
+      connectorApi.request
+        .className(CommonUtils.randomString(10))
+        .workerClusterKey(ObjectKey.of(CommonUtils.randomString(), CommonUtils.randomString()))
+        .create())
+
+    result(connectorApi.get(connector.key)).key shouldBe connector.key
+  }
+
+  @Test
   def runConnectorWithoutTopic(): Unit = {
     val connector = result(
       connectorApi.request.name(CommonUtils.randomString(10)).className(CommonUtils.randomString(10)).create())

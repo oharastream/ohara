@@ -168,8 +168,8 @@ class TestControlConnector extends WithBrokerWorker with Matchers {
     result(topicApi.start(topic.key))
     result(connectorApi.start(sink.key))
     await(() => result(connectorApi.get(sink.key)).status.nonEmpty)
+    await(() => result(connectorApi.get(sink.key)).tasksStatus.nonEmpty)
     result(connectorApi.get(sink.key)).status.get.nodeName == CommonUtils.hostname()
-    result(connectorApi.get(sink.key)).tasksStatus should not be Seq.empty
     result(connectorApi.get(sink.key)).tasksStatus.foreach(_.nodeName shouldBe CommonUtils.hostname())
   }
 

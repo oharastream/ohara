@@ -241,10 +241,13 @@ trait BrokerCollie extends Collie[BrokerClusterStatus] {
 
   /**
     * Create a topic admin according to passed cluster.
-    * @param cluster target cluster
+    * Noted: the input cluster MUST be running. otherwise, a exception is returned.
+    * @param brokerClusterInfo target cluster
     * @return topic admin
     */
-  def topicAdmin(cluster: BrokerClusterInfo): TopicAdmin = TopicAdmin(cluster.connectionProps)
+  def topicAdmin(brokerClusterInfo: BrokerClusterInfo)(
+    implicit executionContext: ExecutionContext): Future[TopicAdmin] =
+    cluster(brokerClusterInfo.key).map(_ => TopicAdmin(brokerClusterInfo.connectionProps))
 
   /**
     * Get all meter beans from specific broker cluster
