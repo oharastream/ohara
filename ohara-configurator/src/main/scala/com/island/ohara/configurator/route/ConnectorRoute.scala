@@ -125,10 +125,13 @@ private[configurator] object ConnectorRoute extends SprayJsonSupport {
         }
         .map { clusterName =>
           toRes(
+            // 1) fill the previous settings (if exists)
+            // 2) overwrite previous settings by updated settings
+            // 3) fill the ignored settings by creation
             access.request
               .settings(previous.map(_.settings).getOrElse(Map.empty))
               .settings(update.settings)
-              // rewrite the group and name to prevent user updates the both group and name.
+              // the key is not in update's settings so we have to add it to settings
               .name(key.name)
               .group(key.group)
               .workerClusterKey(clusterName)

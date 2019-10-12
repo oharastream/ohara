@@ -143,8 +143,8 @@ private[configurator] object TopicRoute {
                                    brokerCollie: BrokerCollie,
                                    store: DataStore,
                                    executionContext: ExecutionContext): HookOfUpdating[Creation, Updating, TopicInfo] =
-    (key: ObjectKey, update: Updating, previous: Option[TopicInfo]) =>
-      previous
+    (key: ObjectKey, update: Updating, previousOption: Option[TopicInfo]) =>
+      previousOption
         .map(_.brokerClusterKey)
         .orElse(update.brokerClusterKey)
         .map(Future.successful)
@@ -157,12 +157,17 @@ private[configurator] object TopicRoute {
                 if (topicFromKafkaOption.isDefined)
                   throw new IllegalStateException(
                     s"the topic:$key is working now. Please stop it before updating the properties")
-
+                // 1) fill the previous settings (if exists)
+                // 2) overwrite previous settings by updated settings
+                // 3) fill the ignored settings by creation
                 try TopicInfo(
                   settings = access.request
-                    .settings(previous.map(_.settings).getOrElse(Map.empty))
+                    .settings(previousOption.map(_.settings).getOrElse(Map.empty))
                     .settings(update.settings)
                     .brokerClusterKey(cluster.key)
+                    // the key is not in update's settings so we have to add it to settings
+                    .name(key.name)
+                    .group(key.group)
                     .creation
                     .settings,
                   partitionInfos = Seq.empty,

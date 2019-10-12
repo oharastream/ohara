@@ -54,6 +54,9 @@ object ZookeeperRoute {
             settings = access.request
               .settings(previousOption.map(_.settings).getOrElse(Map.empty))
               .settings(update.settings)
+              // the key is not in update's settings so we have to add it to settings
+              .name(key.name)
+              .group(key.group)
               .creation
               .settings,
             // this cluster is not running so we don't need to keep the dead nodes in the updated cluster.

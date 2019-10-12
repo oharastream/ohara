@@ -61,9 +61,16 @@ object BrokerRoute {
           // 1) fill the previous settings (if exists)
           // 2) overwrite previous settings by updated settings
           // 3) fill the ignored settings by creation
-          val newSettings = previousOption.map(_.settings).getOrElse(Map.empty) ++ update.settings
           BrokerClusterInfo(
-            settings = BrokerApi.access.request.settings(newSettings).zookeeperClusterKey(zkKey).creation.settings,
+            settings = BrokerApi.access.request
+              .settings(previousOption.map(_.settings).getOrElse(Map.empty))
+              .settings(update.settings)
+              .zookeeperClusterKey(zkKey)
+              // the key is not in update's settings so we have to add it to settings
+              .name(key.name)
+              .group(key.group)
+              .creation
+              .settings,
             aliveNodes = Set.empty,
             state = None,
             error = None,
