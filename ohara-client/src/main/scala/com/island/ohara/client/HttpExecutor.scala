@@ -137,10 +137,12 @@ private[ohara] object HttpExecutor {
       executionContext: ExecutionContext): Future[T] =
       if (res.status.isSuccess()) Unmarshal(res.entity).to[T]
       else asError(res)
+
     private[this] def unmarshal[E <: HttpExecutor.Error](
       res: HttpResponse)(implicit rm: RootJsonFormat[E], executionContext: ExecutionContext): Future[Unit] =
-      if (res.status.isSuccess()) Future.successful[Unit](())
+      if (res.status.isSuccess()) res.discardEntityBytes().future().map(_ => Unit)
       else asError(res)
+
     private[this] def unmarshal[T](res: HttpResponse)(implicit executionContext: ExecutionContext): Future[String] =
       Unmarshal(res.entity).to[String]
 
