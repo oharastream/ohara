@@ -303,7 +303,6 @@ export const useTestConfig = props => {
     setIsTestingConfig(true);
     try {
       const res = await validateConnector(params);
-      setIsTestingConfig(false);
       const isSuccess = get(res, 'data.isSuccess', false);
 
       if (isSuccess) {
@@ -312,6 +311,7 @@ export const useTestConfig = props => {
     } catch (error) {
       showMessage(error.message);
     }
+    setIsTestingConfig(false);
   };
 
   return [isTestingConfig, handleTestConfig];
