@@ -439,7 +439,7 @@ class TestK8SClient extends OharaTest with Matchers {
                         |        "containers": [
                         |          {
                         |            "name": "ohara",
-                        |            "image": "oharastream/broker:0.8.1",
+                        |            "image": "oharastream/broker:0.8.2-SNAPSHOT",
                         |            "ports": [
                         |              {
                         |                "hostPort": 43507,
