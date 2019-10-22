@@ -13,7 +13,7 @@ The streaming application ([StreamApp](https://ohara.readthedocs.io/en/0.8.x/cus
 
 Ohara provides an architecture to scale, so the users can focus on their business logic and their main applications.
 
-**Try this [Quick Start Guide](https://ohara.readthedocs.io/en/latest/user_guide.html#quick-start) to empower your business now!**
+**Try this [Quickstart VM](https://ohara-quickstart.readthedocs.io/en/0.8.x/quickstart_vm.html) to empower your business now!**
 
 ----
 
