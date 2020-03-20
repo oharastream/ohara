@@ -32,7 +32,7 @@ WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
-RUN ./gradlew clean build -x test \
+RUN ./gradlew clean ohara-configurator:build -x test \
   -PskipManager \
   -Pkafka.version=$KAFKA_VERSION \
   -Pscala.version=$SCALA_VERSION \

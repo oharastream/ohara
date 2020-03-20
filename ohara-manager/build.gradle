@@ -136,11 +136,12 @@ task e2e {
   dependsOn setup
 }
 
-task assembly(type: Tar) {
+task assemble(type: Tar) {
   /**
    * the runtime stuff are downloaded by setup task so assembly must run after setup.
    */
   dependsOn setup
+  dependsOn(':ohara-common:versionFile')
   /**
    * exclude useless dirs and files from ohara-manager
    */
@@ -164,6 +165,10 @@ task assembly(type: Tar) {
     // ref to root module
     from { "$projectDir/../bin" }
     fileMode 0755
+  }
+  into("ohara-manager-${project.properties["version"]}/bin") {
+    // version file
+    from { "$projectDir/../ohara-common/build/generated/ohara_version" }
   }
   into("ohara-manager-${project.properties["version"]}/client") {
     from { "$projectDir/client" }
@@ -194,7 +199,7 @@ task build {
   dependsOn test
   dependsOn lint
   dependsOn format
-  dependsOn assembly
+  dependsOn assemble
 }
 
 task runManager {

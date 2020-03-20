@@ -41,12 +41,14 @@ WORKDIR /testpatch/ohara
 RUN git clone $REPO /testpatch/ohara
 RUN git checkout $COMMIT
 RUN if [[ "$BEFORE_BUILD" != "" ]]; then /bin/bash -c "$BEFORE_BUILD" ; fi
-RUN git rev-parse HEAD > $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/ohara_version
 # we build ohara with specified version of kafka in order to keep the compatibility
-RUN ./gradlew clean build -x test -PskipManager -Pkafka.version=$KAFKA_VERSION -Pscala.version=$SCALA_VERSION
+RUN ./gradlew clean ohara-connector:build -x test -PskipManager -Pkafka.version=$KAFKA_VERSION -Pscala.version=$SCALA_VERSION
 RUN mkdir /opt/ohara
 RUN tar -xvf $(find "/testpatch/ohara/ohara-connector/build/distributions" -maxdepth 1 -type f -name "*.tar") -C /opt/ohara/
-RUN cp $(find "/opt/ohara/" -maxdepth 1 -type d -name "ohara-*")/lib/* $(find "/opt/kafka/" -maxdepth 1 -type d -name "kafka_*")/libs/
+# copy version file
+RUN cp $(find "/opt/ohara/" -maxdepth 1 -type d -name "ohara-*")/bin/ohara_version $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/bin/ohara_version
+# copy connector jars
+RUN cp $(find "/opt/ohara/" -maxdepth 1 -type d -name "ohara-*")/lib/* $(find "${KAFKA_DIR}" -maxdepth 1 -type d -name "kafka_*")/libs/
 
 FROM centos:7.7.1908
 

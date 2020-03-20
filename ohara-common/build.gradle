@@ -92,15 +92,17 @@ task versionFile {
     def folder = new File("$projectDir" + "/build/generated")
     if (!folder.exists() && !folder.mkdirs())
       throw new GradleScriptException("failed to create folder on ${folder.toString()}", null)
+    if (!folder.isDirectory())
+      throw new GradleScriptException("$folder is not folder", null)
     def file = new File(folder, "ohara_version")
     if (file.exists()) file.delete()
-  String versionJson = versionInJson(
-    version(),
-    revision(),
-    project.branch.toString(),
-    user(),
-    date()
-  )
+    String versionJson = versionInJson(
+            version(),
+            revision(),
+            project.branch.toString(),
+            user(),
+            date()
+    )
     def writer = new FileWriter(file)
     try {
       writer.write(versionJson.replaceAll("\n", System.lineSeparator()))

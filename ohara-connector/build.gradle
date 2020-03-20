@@ -42,6 +42,8 @@ dependencies {
   testImplementation libs.junit
 }
 
+assemble.dependsOn(':ohara-common:versionFile')
+
 distributions {
   main {
     baseName = "ohara"
@@ -51,10 +53,14 @@ distributions {
         from { "$projectDir/../conf" }
       }
       into("bin") {
+        from { "$projectDir/../ohara-common/build/generated/ohara_version" }
+      }
+      into("bin") {
         // ref to root module
         from { "$projectDir/../bin" }
         fileMode 0755
       }
+
       into("lib") {
         from { "$projectDir/build/libs/ohara-connector-${version}.jar" }
       }

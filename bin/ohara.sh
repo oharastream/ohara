@@ -34,8 +34,13 @@ elif [ "$1" == "stop" ]; then
   SCRIPT="$BIN_DIR/stop-service.sh"
   shift 1
 elif [ "$1" == "-v" ] || [ "$1" == "-version" ]; then
-  "$BIN_DIR/run_java.sh" oharastream.ohara.common.util.VersionUtils
-  java -version
+  # ohara-manager is NOT java project so it has a version file instead of running VersionUtils.
+  if [ -f "$BIN_DIR/ohara_version" ]; then
+    cat "$BIN_DIR/ohara_version"
+  else
+    "$BIN_DIR/run_java.sh" oharastream.ohara.common.util.VersionUtils
+    java -version
+  fi
   exit 0
 else
   echo "Usage: (start|stop) {service name}"
