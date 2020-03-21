@@ -25,4 +25,4 @@ include 'ohara-testing-util',
         'ohara-agent',
         'ohara-configurator',
         'ohara-it',
-        'ohara-streams'
+        'ohara-stream'

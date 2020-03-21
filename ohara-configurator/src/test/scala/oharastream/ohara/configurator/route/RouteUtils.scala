@@ -24,7 +24,7 @@ object RouteUtils {
     * so it is ok to assume the jar file exists
     * @return file
     */
-  def streamFile: File = new File(new File(".").getCanonicalPath, "../ohara-streams/build/libs/ohara-ut-stream.jar")
+  def streamFile: File = new File(new File(".").getCanonicalPath, "../ohara-stream/build/libs/ohara-ut-stream.jar")
 
   /**
     * the jar of connector has "version" but it is changed in running QA. Hence, we use seek directory to find the jar.

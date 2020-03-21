@@ -48,7 +48,7 @@ import oharastream.ohara.configurator.route.ObjectChecker.Condition.RUNNING
 import oharastream.ohara.configurator.store.DataStore
 import oharastream.ohara.kafka.Consumer.Record
 import oharastream.ohara.kafka.{TopicAdmin, Consumer, Header}
-import oharastream.ohara.streams.config.StreamDefUtils
+import oharastream.ohara.stream.config.StreamDefUtils
 import com.typesafe.scalalogging.Logger
 import spray.json.{DeserializationException, JsNull, JsObject}
 

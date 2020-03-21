@@ -248,8 +248,8 @@ To
 ```
 import oharastream.ohara.common.data.Row
 import oharastream.ohara.common.setting.SettingDef
-import oharastream.ohara.streams.config.StreamSetting
-import oharastream.ohara.streams.{OStream, Stream}
+import oharastream.ohara.stream.config.StreamSetting
+import oharastream.ohara.stream.{OStream, Stream}
 
 class DumbStream extends Stream {
 

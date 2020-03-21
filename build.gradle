@@ -114,7 +114,7 @@ static def isJavaModule(String moduleName) {
           moduleName == 'ohara-metrics' ||
           moduleName == 'ohara-kafka' ||
           moduleName == 'ohara-testing-util' ||
-          moduleName == 'ohara-streams'
+          moduleName == 'ohara-stream'
 }
 
 subprojects {

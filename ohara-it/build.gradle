@@ -33,7 +33,7 @@ dependencies {
   implementation project(':ohara-agent')
   implementation project(':ohara-testing-util')
   implementation project(':ohara-metrics')
-  implementation project(':ohara-streams')
+  implementation project(':ohara-stream')
   implementation project(':ohara-shabondi')
   implementation libs.kafkaConnectRuntime
   testImplementation libs.scalaLogging
@@ -75,7 +75,7 @@ dependencies {
   testImplementation project(path: ':ohara-kafka', configuration: 'tests')
   testImplementation project(path: ':ohara-metrics', configuration: 'tests')
   testImplementation project(path: ':ohara-shabondi', configuration: 'tests')
-  testImplementation project(path: ':ohara-streams', configuration: 'tests')
+  testImplementation project(path: ':ohara-stream', configuration: 'tests')
   testImplementation project(path: ':ohara-testing-util', configuration: 'tests')
   testImplementation libs.akkaTestKit
   testImplementation libs.akkaHttpTestKit

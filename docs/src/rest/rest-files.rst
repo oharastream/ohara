@@ -28,7 +28,7 @@ carry the jar name pointing to a existent jar in ohara. The worker
 cluster will load all connectors of the input jar, and then you are able
 to use the connectors on the worker cluster.
 
-The File API upload jar file to use by the :ref:`Worker <rest-workers>` and :ref:`Stream <rest-streams>`.
+The File API upload jar file to use by the :ref:`Worker <rest-workers>` and :ref:`Stream <rest-stream>`.
 
   .. note::
     The file used by a worker or stream can't be either updated or deleted.

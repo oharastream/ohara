@@ -57,7 +57,7 @@ required dependencies are shown below.
             url "https://dl.bintray.com/oharastream/ohara"
         }
     }
-   implementation "oharastream.ohara:ohara-streams:$|version|"
+   implementation "oharastream.ohara:ohara-stream:$|version|"
    implementation "oharastream.ohara:ohara-common:$|version|"
    implementation "oharastream.ohara:ohara-kafka:$|version|"
 
@@ -73,7 +73,7 @@ Stream Entry
 ---------------
 
 We will automatically find your custom class which should be extended by
-**oharastream.ohara.streams.Stream**.
+**oharastream.ohara.stream.Stream**.
 
 In Ohara environment, the required parameters are defined in
 Ohara UI. You only need to initial the ``OStream`` as following:
@@ -186,7 +186,7 @@ The above code does the following transformations:
 #. filter out that if ``filterName`` is null
 
    - here we get the value from **filterName** of definitions. the value you should update by
-     :ref:`Stream update api <rest-streams-update-information>`
+     :ref:`Stream update api <rest-stream-update-information>`
 
    PUT /v0/streams/XXX
 
@@ -294,9 +294,9 @@ Below we provide some examples that demonstrate how to develop your own
 stream applications. More description of each example could be found
 in javadoc.
 
-- :ohara-source:`WordCount <ohara-streams/src/test/java/oharastream/ohara/streams/examples/WordCountExample.java>`: count the words in “word” column
-- :ohara-source:`PageViewRegion <ohara-streams/src/test/java/oharastream/ohara/streams/examples/PageViewRegionExample.java>`: count the views by each region
-- :ohara-source:`Sum <ohara-streams/src/test/java/oharastream/ohara/streams/examples/SumExample.java>`: sum odd numbers in “number” column
+- :ohara-source:`WordCount <ohara-stream/src/test/java/oharastream/ohara/stream/examples/WordCountExample.java>`: count the words in “word” column
+- :ohara-source:`PageViewRegion <ohara-stream/src/test/java/oharastream/ohara/stream/examples/PageViewRegionExample.java>`: count the views by each region
+- :ohara-source:`Sum <ohara-stream/src/test/java/oharastream/ohara/stream/examples/SumExample.java>`: sum odd numbers in “number” column
 
 ---------------------------
 
@@ -340,7 +340,7 @@ as a definition that is listed in the "common" group.
    Any group category will generate a new "tab" in Ohara manager.
 
 The value of each definition will be kept in environment of stream running container, and you should set the value by
-:ref:`stream api <rest-streams-update-information>`.
+:ref:`stream api <rest-stream-update-information>`.
 
 ---------------------------
 
@@ -354,15 +354,15 @@ collects some metrics data from the stream in the background. The
 metrics data here means :ref:`official metrics <stream-official-metrics>` which
 contains :ref:`Counters <connector-counter>` for now (other
 type of metrics will be introduced in the future). The metrics data
-could be fetched by :ref:`Stream APIs<rest-streams>`.
+could be fetched by :ref:`Stream APIs<rest-stream>`.
 Developers will be able to implement their own custom metrics in the
 foreseeable future.
 
 Ohara leverages JMX to offer the metrics data to stream. It
 means that all metrics you have created are stored as Java beans and
 accessible through JMX service. The stream will expose a port via
-:ref:`Stream APIs<rest-streams>` for other JMX client
-tool used, such as JMC, but we still encourage you to use :ref:`Stream APIs<rest-streams>`
+:ref:`Stream APIs<rest-stream>` for other JMX client
+tool used, such as JMC, but we still encourage you to use :ref:`Stream APIs<rest-stream>`
 as it offers a more readable format of metrics.
 
 .. _stream-official-metrics:
@@ -376,10 +376,10 @@ records (counter) - produced topic records (counter)
 A normal stream will connect to two topics, one is the source topic
 that stream will consume from, and the other is the target topic that
 stream will produce to. We use prefix words (**TOPIC_IN**, **TOPIC_OUT**)
-in the response data (:ref:`Stream APIs<rest-streams>`)
+in the response data (:ref:`Stream APIs<rest-stream>`)
 in order to improve readabilities of those types. You don’t need to worry about the
 implementation of these official metrics, but you can still read the
-:ohara-source:`source code <ohara-streams/src/main/java/oharastream/ohara/streams/metric/MetricFactory.java>`
+:ohara-source:`source code <ohara-stream/src/main/java/oharastream/ohara/stream/metric/MetricFactory.java>`
 to see how Ohara creates official metrics.
 
 ---------------------------

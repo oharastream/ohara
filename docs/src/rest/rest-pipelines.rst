@@ -63,7 +63,7 @@ Following information are written by Ohara.
 
    - objects[i].name (**string**) — object’s name
    - objects[i].kind (**string**) — the type of this object. for instance, :ref:`topic <rest-topics>`,
-     :ref:`connector <rest-connectors>`, and :ref:`stream <rest-streams>`
+     :ref:`connector <rest-connectors>`, and :ref:`stream <rest-stream>`
    - objects[i].className (**string**) — object’s implementation. Normally, it shows the full name of
      a java class
    - objects[i].state (**option(string)**) — the state of object. If the object can’t have state

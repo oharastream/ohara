@@ -95,7 +95,7 @@ Manage clusters
    rest-workers
    rest-validation
    rest-containers
-   rest-streams
+   rest-stream
    rest-files
    rest-logs
    rest-inspect

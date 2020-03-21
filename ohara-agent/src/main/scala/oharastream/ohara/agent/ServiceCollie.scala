@@ -33,7 +33,7 @@ import oharastream.ohara.common.setting.WithDefinitions
 import oharastream.ohara.common.util.Releasable
 import oharastream.ohara.kafka.RowPartitioner
 import oharastream.ohara.kafka.connector.{RowSinkConnector, RowSourceConnector}
-import oharastream.ohara.streams.Stream
+import oharastream.ohara.stream.Stream
 import com.typesafe.scalalogging.Logger
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner

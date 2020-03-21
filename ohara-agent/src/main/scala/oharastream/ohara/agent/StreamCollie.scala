@@ -27,8 +27,8 @@ import oharastream.ohara.client.configurator.v0.NodeApi.Node
 import oharastream.ohara.client.configurator.v0.StreamApi.Creation
 import oharastream.ohara.client.configurator.v0.{ClusterStatus, StreamApi}
 import oharastream.ohara.common.setting.ObjectKey
-import oharastream.ohara.streams.Stream
-import oharastream.ohara.streams.config.StreamSetting
+import oharastream.ohara.stream.Stream
+import oharastream.ohara.stream.config.StreamSetting
 import com.typesafe.scalalogging.Logger
 import spray.json.JsString
 

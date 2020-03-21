@@ -22,7 +22,7 @@ import oharastream.ohara.common.rule.OharaTest
 import oharastream.ohara.common.setting.SettingDef.Permission
 import oharastream.ohara.common.setting.{ObjectKey, SettingDef, TopicKey}
 import oharastream.ohara.common.util.{CommonUtils, VersionUtils}
-import oharastream.ohara.streams.config.StreamDefUtils
+import oharastream.ohara.stream.config.StreamDefUtils
 import org.junit.Test
 import org.scalatest.Matchers._
 import spray.json.DefaultJsonProtocol._

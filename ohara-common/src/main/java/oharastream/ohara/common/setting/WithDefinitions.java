@@ -149,7 +149,7 @@ public interface WithDefinitions {
               case "oharastream.ohara.kafka.connector.RowSinkConnector":
                 kind = Type.SINK.key();
                 break;
-              case "oharastream.ohara.streams.Stream":
+              case "oharastream.ohara.stream.Stream":
                 kind = Type.STREAM.key();
                 break;
               case "oharastream.ohara.kafka.RowPartitioner":

@@ -23,7 +23,7 @@ import oharastream.ohara.client.configurator.v0.MetricsApi.Metrics
 import oharastream.ohara.common.annotations.{Optional, VisibleForTesting}
 import oharastream.ohara.common.setting.{ObjectKey, SettingDef, TopicKey}
 import oharastream.ohara.common.util.CommonUtils
-import oharastream.ohara.streams.config.StreamDefUtils
+import oharastream.ohara.stream.config.StreamDefUtils
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 

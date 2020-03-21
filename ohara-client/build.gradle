@@ -19,7 +19,7 @@ apply from: "$rootDir/gradle/dependencies.gradle"
 dependencies {
   implementation project(':ohara-common')
   implementation project(':ohara-kafka')
-  implementation project(':ohara-streams')
+  implementation project(':ohara-stream')
   implementation project(':ohara-shabondi')
   implementation libs.commonsNet
   implementation libs.commonsLang

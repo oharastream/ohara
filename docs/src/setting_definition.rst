@@ -61,7 +61,7 @@ SettingDef is a class used to describe the details of **a** setting. It consists
 
 .. note::
    You can call :ref:`Worker APIs <rest-workers>` to get all connectors’ setting definitions, and use
-   :ref:`Stream APIs <rest-streams>` to get all stream setting definitions.
+   :ref:`Stream APIs <rest-stream>` to get all stream setting definitions.
 
 Although a SettingDef can include many elements, you can simply
 build a SettingDef with only what you need. An extreme example is

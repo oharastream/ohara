@@ -1,0 +1,83 @@
+/*
+ * Copyright 2019 is-land
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+apply plugin: 'java-library-distribution'
+
+dependencies {
+  implementation project(':ohara-common')
+  implementation project(':ohara-kafka')
+  implementation project(':ohara-metrics')
+  implementation libs.commonsLang
+  implementation libs.slf4jApi
+  implementation libs.slf4jLog4j
+  implementation libs.kafkaStreams
+  implementation libs.guava
+  testImplementation project(':ohara-testing-util')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'tests')
+  testImplementation project(path: ':ohara-common', configuration: 'tests')
+  testImplementation libs.mockitoAll
+  testImplementation libs.junit
+  testImplementation libs.javassist
+}
+
+distributions {
+  main {
+    baseName = "ohara"
+    contents {
+      into("conf") {
+        // ref to root module
+        from { "$projectDir/../conf" }
+      }
+      into("bin") {
+        // ref to root module
+        from { "$projectDir/../bin" }
+        fileMode 0755
+      }
+      into("lib") {
+        from { "$projectDir/build/libs/ohara-stream-${version}.jar" }
+      }
+    }
+  }
+}
+
+/**
+ * run a importData based on user defined kafka cluster
+ */
+task runImportData(type: JavaExec, dependsOn: 'classes') {
+  description 'run AirlineDataImporter. You can use --bootstrapServers and --useOharaAPI.'
+  String servers = "192.168.99.100:9092,192.168.99.100:9093,192.168.99.100:9094"
+  if (project.hasProperty('servers')) {
+    servers = "${project.getProperty('servers')}"
+  }
+  boolean useOharaAPI = false
+
+  classpath = sourceSets.test.runtimeClasspath
+  main = "oharastream.ohara.stream.AirlineDataImporter"
+
+  args = Arrays.asList("--bootstrapServers", servers, "--useOharaAPI", useOharaAPI)
+
+}
+
+/**
+ * package a simple test stream jar.
+ */
+task streamJar(type: Jar, dependsOn: compileJava) {
+  from sourceSets.test.output
+  include '**/SimpleApplicationForOharaEnv**.class'
+  archiveName "ohara-ut-stream.jar"
+}
+test.dependsOn streamJar

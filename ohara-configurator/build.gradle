@@ -26,7 +26,7 @@ dependencies {
   implementation project(':ohara-common')
   implementation project(':ohara-connector')
   implementation project(':ohara-kafka')
-  implementation project(":ohara-streams")
+  implementation project(":ohara-stream")
   implementation project(":ohara-shabondi")
   implementation project(":ohara-metrics")
   implementation libs.scalaJava8Compat
@@ -81,7 +81,7 @@ task runConfigurator(type: JavaExec, dependsOn: 'classes') {
     .collect(Collectors.toList())
 }
 // this testing jar is useful in testing route
-test.dependsOn(':ohara-streams:streamJar')
+test.dependsOn(':ohara-stream:streamJar')
 // we use the dumb connector to test FileInfoRoute
 test.dependsOn(':ohara-kafka:testJar')
 
