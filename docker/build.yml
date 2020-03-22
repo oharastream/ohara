@@ -22,7 +22,7 @@ version: '3'
 
 services:
   configurator:
-    image: oharastream/configurator:${TAG:-0.9.0}
+    image: oharastream/configurator:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: configurator.dockerfile
@@ -32,7 +32,7 @@ services:
         OHARA_VERSION: ""
 
   manager:
-    image: oharastream/manager:${TAG:-0.9.0}
+    image: oharastream/manager:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: manager.dockerfile
@@ -41,7 +41,7 @@ services:
         REPO: https://github.com/oharastream/ohara.git
 
   stream:
-    image: oharastream/stream:${TAG:-0.9.0}
+    image: oharastream/stream:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: stream.dockerfile
@@ -55,7 +55,7 @@ services:
         REPO: https://github.com/oharastream/ohara.git
 
   shabondi:
-    image: oharastream/shabondi:${TAG:-0.9.0}
+    image: oharastream/shabondi:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: shabondi.dockerfile
@@ -64,7 +64,7 @@ services:
         REPO: https://github.com/oharastream/ohara.git
 
   backend:
-    image: oharastream/backend:${TAG:-0.9.0}
+    image: oharastream/backend:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: backend.dockerfile
@@ -73,7 +73,7 @@ services:
         REPO: https://github.com/oharastream/ohara.git
 
   zookeeper:
-    image: oharastream/zookeeper:${TAG:-0.9.0}
+    image: oharastream/zookeeper:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: zookeeper.dockerfile
@@ -81,7 +81,7 @@ services:
         ZOOKEEPER_VERSION: 3.4.13
 
   broker:
-    image: oharastream/broker:${TAG:-0.9.0}
+    image: oharastream/broker:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: broker.dockerfile
@@ -89,7 +89,7 @@ services:
         KAFKA_VERSION: 2.4.0
 
   worker:
-    image: oharastream/connect-worker:${TAG:-0.9.0}
+    image: oharastream/connect-worker:${TAG:-0.9.1-SNAPSHOT}
     build:
       context: .
       dockerfile: worker.dockerfile
