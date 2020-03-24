@@ -167,9 +167,6 @@ subprojects {
   // -------------------------------------------------[docs/tests/sources jar]-------------------------------------------------//
   if (it.name != 'ohara-manager') {
     String moduleName = it.name
-    configurations {
-      tests.extendsFrom archives
-    }
 
     task testJar(type: Jar, dependsOn: testClasses) {
       from sourceSets.test.output
@@ -192,9 +189,7 @@ subprojects {
     }
 
     artifacts {
-      archives testJar
-      archives sourcesJar
-      archives docJar
+      testRuntime testJar
     }
   }
 

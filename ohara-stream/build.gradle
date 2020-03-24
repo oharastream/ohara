@@ -27,8 +27,8 @@ dependencies {
   implementation libs.kafkaStreams
   implementation libs.guava
   testImplementation project(':ohara-testing-util')
-  testImplementation project(path: ':ohara-testing-util', configuration: 'tests')
-  testImplementation project(path: ':ohara-common', configuration: 'tests')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
   testImplementation libs.mockitoAll
   testImplementation libs.junit
   testImplementation libs.javassist

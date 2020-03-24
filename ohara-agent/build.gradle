@@ -39,8 +39,8 @@ dependencies {
   }
   implementation libs.commonsIo
   testImplementation project(":ohara-testing-util")
-  testImplementation project(path: ':ohara-common', configuration: 'tests')
-  testImplementation project(path: ':ohara-testing-util', configuration: 'tests')
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
+  testImplementation project(path: ':ohara-testing-util', configuration: 'testRuntime')
   testImplementation libs.scalatest
   testImplementation libs.junit
 }

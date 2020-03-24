@@ -21,9 +21,9 @@ import java.lang.reflect.{Method, Modifier}
 
 import oharastream.ohara.common.rule.OharaTest
 import oharastream.ohara.it.IntegrationTest
+import oharastream.ohara.it.code.ClassUtils._
 import org.junit.{After, Before, Test}
 import org.scalatest.Matchers._
-import ClassUtils._
 
 class TestTestCases extends OharaTest {
   /**
@@ -33,6 +33,23 @@ class TestTestCases extends OharaTest {
     classOf[OharaTest],
     classOf[IntegrationTest]
   )
+
+  @Test
+  def testListTestClasses(): Unit = {
+    val classes = testClasses()
+    classes.size should not be 0
+    classes.exists(_.getName.startsWith("oharastream.ohara.agent"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.client"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.common"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.connector"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.configurator"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.it"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.kafka"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.metrics"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.shabondi"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.stream"))
+    classes.exists(_.getName.startsWith("oharastream.ohara.testing"))
+  }
 
   @Test
   def failIfTestHasNoTestCase(): Unit = {

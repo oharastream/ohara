@@ -32,7 +32,7 @@ dependencies {
   implementation libs.scalaJava8Compat
   implementation libs.guava
 
-  testImplementation project(path: ':ohara-common', configuration: 'tests')
+  testImplementation project(path: ':ohara-common', configuration: 'testRuntime')
   testImplementation project(':ohara-kafka')
   testImplementation project(':ohara-testing-util')
   testImplementation project(':ohara-testing-util').sourceSets.test.output
