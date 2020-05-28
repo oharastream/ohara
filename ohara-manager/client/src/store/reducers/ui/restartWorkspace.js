@@ -47,7 +47,7 @@ export default function reducer(state = initialState, action) {
   switch (action.type) {
     case actions.openRestartWorkspace.TRIGGER:
       return {
-        ...state,
+        ...initialState,
         isAutoClose: false,
         closeDisable: true,
         isOpen: true,
