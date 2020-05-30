@@ -129,8 +129,10 @@ subprojects {
   if (it.name != 'ohara-manager') {
     if (isJavaModule(it.name)) {
       apply plugin: 'java'
-      sourceCompatibility = 1.8
-      targetCompatibility = 1.8
+      java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+      }
     }
     else {
       apply plugin: 'scala'

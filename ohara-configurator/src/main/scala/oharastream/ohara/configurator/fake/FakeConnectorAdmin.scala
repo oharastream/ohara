@@ -134,7 +134,7 @@ private[configurator] class FakeConnectorAdmin extends ConnectorAdmin {
     ): Future[SettingInfo] = {
       // TODO: this implementation use kafka private APIs ... by chia
       Future {
-        val instance = Class.forName(validation.className).newInstance()
+        val instance = Class.forName(validation.className).getDeclaredConstructor().newInstance()
         val (connectorType, configDef, values) = instance match {
           case c: SourceConnector => ("source", c.config(), c.config().validate(validation.settings))
           case c: SinkConnector   => ("sink", c.config(), c.config().validate(validation.settings))

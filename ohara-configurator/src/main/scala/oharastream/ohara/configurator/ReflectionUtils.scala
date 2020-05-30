@@ -43,7 +43,7 @@ object ReflectionUtils {
       // the abstract class is not instantiable.
       .filterNot(clz => Modifier.isAbstract(clz.getModifiers))
       .flatMap { clz =>
-        try Some((clz.getName, clz.newInstance().settingDefinitions().values().asScala.toSeq))
+        try Some((clz.getName, clz.getDeclaredConstructor().newInstance().settingDefinitions().values().asScala.toSeq))
         catch {
           case e: Throwable =>
             LOG.error(s"failed to instantiate ${clz.getName}", e)

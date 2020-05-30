@@ -209,7 +209,7 @@ private[configurator] object InspectRoute {
                       }
                       .map {
                         case (tp, offset) =>
-                          tp -> new lang.Long(offset - limit)
+                          tp -> lang.Long.valueOf(offset - limit)
                       }
                       .toMap
                       .asJava

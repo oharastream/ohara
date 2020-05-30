@@ -76,7 +76,7 @@ object ConnectorTestUtils {
   ): Unit = {
     fileSystem.delete(path, true)
     intercept[NoSuchFileException] {
-      val connector = connectorClass.newInstance()
+      val connector = connectorClass.getDeclaredConstructor().newInstance()
       try connector.start(props.asJava)
       finally connector.stop()
     }.getMessage should include("doesn't exist")
@@ -93,7 +93,7 @@ object ConnectorTestUtils {
     try output.write("fileShouldFail".getBytes)
     finally output.close()
     intercept[IllegalArgumentException] {
-      val connector = connectorClass.newInstance()
+      val connector = connectorClass.getDeclaredConstructor().newInstance()
       try connector.start(props.asJava)
       finally connector.stop()
     }.getMessage should include("NOT folder")

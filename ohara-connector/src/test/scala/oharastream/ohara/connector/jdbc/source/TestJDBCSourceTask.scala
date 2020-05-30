@@ -165,7 +165,7 @@ class TestJDBCSourceTask extends OharaTest {
   def testRowInt(): Unit = {
     val jdbcSourceTask: JDBCSourceTask   = new JDBCSourceTask()
     val schema: Seq[Column]              = Seq(Column.builder().name("COLUMN1").dataType(DataType.INT).order(0).build())
-    val columnInfo: Seq[ColumnInfo[Int]] = Seq(ColumnInfo("COLUMN1", "int", new Integer(100)))
+    val columnInfo: Seq[ColumnInfo[Int]] = Seq(ColumnInfo("COLUMN1", "int", Integer.valueOf(100)))
     val row0: Row                        = jdbcSourceTask.row(schema, columnInfo)
     row0.cell("COLUMN1").value shouldBe 100
   }
@@ -178,7 +178,7 @@ class TestJDBCSourceTask extends OharaTest {
       Column.builder().name("c0").dataType(DataType.INT).order(0).build()
     )
     val columnInfo: Seq[ColumnInfo[Int]] =
-      Seq(ColumnInfo("c1", "int", new Integer(100)), ColumnInfo("c0", "int", new Integer(50)))
+      Seq(ColumnInfo("c1", "int", Integer.valueOf(100)), ColumnInfo("c0", "int", Integer.valueOf(50)))
     val cells = jdbcSourceTask.row(schema, columnInfo).cells().asScala
     cells.head.name shouldBe "c0"
     cells.head.value shouldBe 50
@@ -192,7 +192,7 @@ class TestJDBCSourceTask extends OharaTest {
     val schema: Seq[Column] = Seq(
       Column.builder().name("COLUMN1").newName("COLUMN100").dataType(DataType.INT).order(0).build()
     )
-    val columnInfo: Seq[ColumnInfo[Int]] = Seq(ColumnInfo("COLUMN1", "int", new Integer(100)))
+    val columnInfo: Seq[ColumnInfo[Int]] = Seq(ColumnInfo("COLUMN1", "int", Integer.valueOf(100)))
     val row0: Row                        = jdbcSourceTask.row(schema, columnInfo)
     row0.cell("COLUMN100").value shouldBe 100
   }

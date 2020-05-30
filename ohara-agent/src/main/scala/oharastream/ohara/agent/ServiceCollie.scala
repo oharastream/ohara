@@ -168,7 +168,7 @@ abstract class ServiceCollie extends Releasable {
     if (classNames(reflections).all.isEmpty) FileContent.empty
     else {
       def settingDefinitions[T <: WithDefinitions](clz: Class[T]) =
-        try Some(clz.getName -> clz.newInstance().settingDefinitions().values().asScala.toSeq)
+        try Some(clz.getName -> clz.getDeclaredConstructor().newInstance().settingDefinitions().values().asScala.toSeq)
         catch {
           case e: Throwable =>
             ServiceCollie.LOG.warn(s"failed to load class:${clz.getName}", e)

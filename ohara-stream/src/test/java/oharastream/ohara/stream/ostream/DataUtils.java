@@ -60,7 +60,7 @@ class DataUtils {
         .map(
             values -> {
               try {
-                Object rowObject = rowClass.newInstance();
+                Object rowObject = rowClass.getDeclaredConstructor().newInstance();
                 Field[] fields = rowClass.getDeclaredFields();
                 for (int i = 0; i < fields.length; i++) {
                   fields[i].setAccessible(true);
