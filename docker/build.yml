@@ -26,73 +26,45 @@ services:
     build:
       context: .
       dockerfile: configurator.dockerfile
-      args:
-        BRANCH: master
-        REPO: https://github.com/oharastream/ohara.git
-        OHARA_VERSION: ""
 
   manager:
     image: oharastream/manager:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: manager.dockerfile
-      args:
-        BRANCH: master
-        REPO: https://github.com/oharastream/ohara.git
 
   stream:
     image: oharastream/stream:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: stream.dockerfile
-      args:
-        KAFKA_VERSION: 2.5.0
-        LOG_VERSION: 1.7.25
-        COMMON_LANG_VERSION: 3.7
-        ROCKDB_VERSION: 5.7.3
-        BRANCH: master
-        REPO: https://github.com/oharastream/ohara.git
 
   shabondi:
     image: oharastream/shabondi:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: shabondi.dockerfile
-      args:
-        BRANCH: master
-        REPO: https://github.com/oharastream/ohara.git
 
   backend:
     image: oharastream/backend:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: backend.dockerfile
-      args:
-        BRANCH: master
-        REPO: https://github.com/oharastream/ohara.git
 
   zookeeper:
     image: oharastream/zookeeper:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: zookeeper.dockerfile
-      args:
-        ZOOKEEPER_VERSION: 3.5.7
 
   broker:
     image: oharastream/broker:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: broker.dockerfile
-      args:
-        KAFKA_VERSION: 2.5.0
 
   worker:
     image: oharastream/connect-worker:${TAG:-0.10.0-SNAPSHOT}
     build:
       context: .
       dockerfile: worker.dockerfile
-      args:
-        KAFKA_VERSION: 2.5.0
-        BRANCH: master
-        REPO: https://github.com/oharastream/ohara.git
