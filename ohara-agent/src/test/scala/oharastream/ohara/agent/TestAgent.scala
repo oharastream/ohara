@@ -46,8 +46,7 @@ class TestAgent extends OharaTest {
       Agent.builder.hostname(server.hostname).port(server.port).user(server.user).password(server.password).build
     try {
       val result = agent.execute("java -version").get
-      // You must have jdk 1.8+ if you want to run ohara...
-      withClue(s"result:$result")(result.contains("1.8.0") shouldBe true)
+      result.toLowerCase should include("jdk")
     } finally agent.close()
   }
 
