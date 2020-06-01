@@ -17,12 +17,12 @@
 package oharastream.ohara.configurator
 
 import java.lang.reflect.Modifier
-
+import com.typesafe.scalalogging.Logger
 import oharastream.ohara.client.configurator.v0.FileInfoApi.ClassInfo
 import oharastream.ohara.common.setting.WithDefinitions
-import com.typesafe.scalalogging.Logger
 import oharastream.ohara.kafka.connector.{RowSinkConnector, RowSourceConnector}
 import org.reflections.Reflections
+import org.reflections.util.{ClasspathHelper, ConfigurationBuilder}
 
 import scala.jdk.CollectionConverters._
 object ReflectionUtils {
@@ -33,8 +33,12 @@ object ReflectionUtils {
     * @return local connector definitions
     */
   lazy val localConnectorDefinitions: Seq[ClassInfo] =
-    new Reflections()
-      .getSubTypesOf(classOf[WithDefinitions])
+    new Reflections(
+      new ConfigurationBuilder()
+      // we ought to define urls manually since Reflections does not work on java 11
+      // It can't find correct urls without pre-defined urls.
+        .setUrls(ClasspathHelper.forJavaClassPath)
+    ).getSubTypesOf(classOf[WithDefinitions])
       .asScala
       .toSeq
       .filter(
