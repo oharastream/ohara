@@ -39,7 +39,7 @@ export const entity = {
   sharedJarKeys: [],
   tags: {},
   xmx: 2048,
-  imageName: 'oharastream/connect-worker:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/connect-worker:0.10.0',
   'offset.storage.topic': '346b839ea3e74387ab1eea409',
   'status.storage.replication.factor': 1,
   'group.id': 'af4b4d49234a4848bb90fb452',

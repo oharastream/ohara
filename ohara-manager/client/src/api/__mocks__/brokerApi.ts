@@ -35,7 +35,7 @@ export const entity = {
   'num.network.threads': 1,
   tags: {},
   xmx: 1024,
-  imageName: 'oharastream/broker:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/broker:0.10.0',
   'log.dirs': '/home/ohara/default/data',
   jmxPort: 42020,
   'num.io.threads': 1,

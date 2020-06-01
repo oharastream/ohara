@@ -34,7 +34,7 @@ export const entity = {
   tags: {},
   electionPort: 44371,
   xmx: 1024,
-  imageName: 'oharastream/zookeeper:0.9.0',
+  imageName: 'oharastream/zookeeper:0.10.0',
   initLimit: 10,
   jmxPort: 33915,
   clientPort: 42006,

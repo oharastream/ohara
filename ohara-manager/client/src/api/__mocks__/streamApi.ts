@@ -38,7 +38,7 @@ export const entity = {
   lastModified: 0,
   tags: {},
   xmx: 1024,
-  imageName: 'oharastream/stream:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/stream:0.10.0',
   jarKey: {
     group: 'default',
     name: 'ohara-it-stream.jar',
@@ -50,7 +50,7 @@ export const entity = {
     },
   ],
   revision: 'b303f3c2e52647ee5e79e55f9d74a5e51238a92c',
-  version: '0.10.0-SNAPSHOT',
+  version: '0.10.0',
   aliveNodes: [],
   'stream.class': 'oharastream.ohara.it.stream.DumbStream',
   from: [

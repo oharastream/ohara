@@ -47,7 +47,7 @@ export const entity = {
   'perf.frequency': '1000 milliseconds',
   'connector.class': 'oharastream.ohara.connector.perf.PerfSource',
   revision: 'baafe4a3d875e5e5028b686c4f74f26cfd8b1b66',
-  version: '0.9.0',
+  version: '0.10.0',
   columns: [],
   metrics: {
     meters: [],

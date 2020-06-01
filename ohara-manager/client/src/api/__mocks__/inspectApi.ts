@@ -28,7 +28,7 @@ import {
 } from 'api/apiInterface/definitionInterface';
 
 export const brokerInfoEntity = {
-  imageName: 'oharastream/broker:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/broker:0.10.0',
   settingDefinitions: [
     {
       blacklist: [],
@@ -51,7 +51,7 @@ export const brokerInfoEntity = {
 };
 
 export const zookeeperInfoEntity = {
-  imageName: 'oharastream/zookeeper:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/zookeeper:0.10.0',
   settingDefinitions: [
     {
       blacklist: [],
@@ -97,7 +97,7 @@ export const workerInfoEntity = {
       ],
     },
   ],
-  imageName: 'oharastream/connect-worker:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/connect-worker:0.10.0',
   settingDefinitions: [
     {
       blacklist: [],
@@ -119,7 +119,7 @@ export const workerInfoEntity = {
 
 export const shabondiInfoEntity = {
   classInfos: [],
-  imageName: 'oharastream/shabondi:0.10.0-SNAPSHOT',
+  imageName: 'oharastream/shabondi:0.10.0',
   settingDefinitions: [
     {
       blacklist: [],
