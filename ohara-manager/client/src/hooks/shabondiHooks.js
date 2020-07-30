@@ -86,10 +86,10 @@ export const useRemoveShabondiSinkLinkAction = () => {
 export const useStartShabondiAction = () => {
   const dispatch = useDispatch();
   const group = useShabondiGroup();
-  return (params, options) =>
+  return (values, options) =>
     dispatch(
       actions.startShabondi.trigger({
-        params: { ...params, group },
+        values: { ...values, group },
         options,
       }),
     );
@@ -98,10 +98,10 @@ export const useStartShabondiAction = () => {
 export const useStopShabondiAction = () => {
   const dispatch = useDispatch();
   const group = useShabondiGroup();
-  return (params, options) =>
+  return (values, options) =>
     dispatch(
       actions.stopShabondi.trigger({
-        params: { ...params, group },
+        values: { ...values, group },
         options,
       }),
     );

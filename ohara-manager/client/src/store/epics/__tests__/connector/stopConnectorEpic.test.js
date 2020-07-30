@@ -16,13 +16,14 @@
 
 import { TestScheduler } from 'rxjs/testing';
 import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 import stopConnectorEpic from '../../connector/stopConnectorEpic';
 import * as connectorApi from 'api/connectorApi';
 import * as actions from 'store/actions';
 import { getId } from 'utils/object';
 import { entity as connectorEntity } from 'api/__mocks__/connectorApi';
-import { SERVICE_STATE } from 'api/apiInterface/clusterInterface';
+import { State as ConnectorState } from 'api/apiInterface/connectorInterface';
 import { LOG_LEVEL, CELL_STATUS } from 'const';
 
 jest.mock('api/connectorApi');
@@ -50,7 +51,7 @@ it('should stop the connector', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a        ';
-    const expected = '--a 499ms v';
+    const expected = '--a 199ms v';
     const subs = '    ^----------';
     const id = '1234';
 
@@ -58,7 +59,7 @@ it('should stop the connector', () => {
       a: {
         type: actions.stopConnector.TRIGGER,
         payload: {
-          params: { ...connectorEntity, id },
+          values: { ...connectorEntity, id },
           options: { paperApi },
         },
       },
@@ -111,8 +112,8 @@ it('should fail after reaching the retry limit', () => {
       of({
         status: 200,
         title: 'retry mock get data',
-        data: { ...connectorEntity, state: SERVICE_STATE.RUNNING },
-      }),
+        data: { ...connectorEntity, state: ConnectorState.RUNNING },
+      }).pipe(delay(100)),
     );
   }
   // get result finally
@@ -121,15 +122,16 @@ it('should fail after reaching the retry limit', () => {
       status: 200,
       title: 'retry mock get data',
       data: { ...connectorEntity },
-    }),
+    }).pipe(delay(100)),
   );
 
   makeTestScheduler().run((helpers) => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a            ';
-    // we failed after retry 5 times (5 * 2000ms = 10s)
-    const expected = '--a 9999ms (vu)';
+    // stop 6 times, get 6 times, retry 5 times
+    // => 100ms * 6 + 100ms * 6 + 31s = 32200ms
+    const expected = '--a 32199ms (vu)';
     const subs = '    ^--------------';
     const id = '1234';
 
@@ -137,7 +139,10 @@ it('should fail after reaching the retry limit', () => {
       a: {
         type: actions.stopConnector.TRIGGER,
         payload: {
-          params: { ...connectorEntity, id },
+          values: {
+            ...connectorEntity,
+            id,
+          },
           options: { paperApi },
         },
       },
@@ -155,18 +160,24 @@ it('should fail after reaching the retry limit', () => {
         type: actions.stopConnector.FAILURE,
         payload: {
           connectorId,
-          data: { ...connectorEntity, state: SERVICE_STATE.RUNNING },
-          meta: undefined,
-          title: `Try to stop connector: "${connectorEntity.name}" failed after retry 5 times. Expected state is nonexistent, Actual state: RUNNING`,
+          data: {
+            ...connectorEntity,
+            state: ConnectorState.RUNNING,
+          },
+          status: 200,
+          title: `Failed to stop connector ${connectorEntity.name}: Unable to confirm the status of the connector is not running`,
         },
       },
       u: {
         type: actions.createEventLog.TRIGGER,
         payload: {
           connectorId,
-          data: { ...connectorEntity, state: SERVICE_STATE.RUNNING },
-          meta: undefined,
-          title: `Try to stop connector: "${connectorEntity.name}" failed after retry 5 times. Expected state is nonexistent, Actual state: RUNNING`,
+          data: {
+            ...connectorEntity,
+            state: ConnectorState.RUNNING,
+          },
+          status: 200,
+          title: `Failed to stop connector ${connectorEntity.name}: Unable to confirm the status of the connector is not running`,
           type: LOG_LEVEL.error,
         },
       },
@@ -191,7 +202,7 @@ it('stop connector multiple times should be worked once', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a---a 1s a 10s ';
-    const expected = '--a       499ms v';
+    const expected = '--a       199ms v';
     const subs = '    ^----------------';
     const id = '1234';
 
@@ -199,7 +210,7 @@ it('stop connector multiple times should be worked once', () => {
       a: {
         type: actions.stopConnector.TRIGGER,
         payload: {
-          params: { ...connectorEntity, id },
+          values: { ...connectorEntity, id },
           options: { paperApi },
         },
       },
@@ -255,7 +266,7 @@ it('stop different connector should be worked correctly', () => {
       clientPort: 3333,
     };
     const input = '   ^-a--b           ';
-    const expected = '--a--b 496ms y--z';
+    const expected = '--a--b 196ms y--z';
     const subs = '    ^----------------';
     const id1 = '1234';
     const id2 = '5678';
@@ -264,14 +275,14 @@ it('stop different connector should be worked correctly', () => {
       a: {
         type: actions.stopConnector.TRIGGER,
         payload: {
-          params: { ...connectorEntity, id: id1 },
+          values: { ...connectorEntity, id: id1 },
           options: { paperApi },
         },
       },
       b: {
         type: actions.stopConnector.TRIGGER,
         payload: {
-          params: { ...anotherConnectorEntity, id: id2 },
+          values: { ...anotherConnectorEntity, id: id2 },
           options: { paperApi },
         },
       },

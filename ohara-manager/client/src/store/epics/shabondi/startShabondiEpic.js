@@ -17,90 +17,50 @@
 import { merge } from 'lodash';
 import { normalize } from 'normalizr';
 import { ofType } from 'redux-observable';
-import { of, defer, iif, throwError, zip, from } from 'rxjs';
+import { of } from 'rxjs';
 import {
   catchError,
-  map,
-  startWith,
-  retryWhen,
-  delay,
-  concatMap,
   distinctUntilChanged,
+  map,
   mergeMap,
+  startWith,
+  tap,
 } from 'rxjs/operators';
 
-import { CELL_STATUS, LOG_LEVEL } from 'const';
-import * as shabondiApi from 'api/shabondiApi';
 import * as actions from 'store/actions';
 import * as schema from 'store/schema';
 import { getId } from 'utils/object';
-import { SERVICE_STATE } from 'api/apiInterface/clusterInterface';
-
-/* eslint-disable no-unused-expressions */
-const startShabondi$ = (value) => {
-  const { params, options = {} } = value;
-  const shabondiId = getId(params);
-
-  const previousStatus =
-    options.paperApi?.getCell(params?.id)?.status || CELL_STATUS.stopped;
-
-  options.paperApi?.updateElement(params.id, {
-    status: CELL_STATUS.pending,
-  });
-
-  return zip(
-    defer(() => shabondiApi.start(params)),
-    defer(() => shabondiApi.get(params)).pipe(
-      map((res) => {
-        if (!res.data.state || res.data.state !== SERVICE_STATE.RUNNING)
-          throw res;
-        else return res.data;
-      }),
-    ),
-  ).pipe(
-    retryWhen((errors) =>
-      errors.pipe(
-        concatMap((value, index) =>
-          iif(
-            () => index > 4,
-            throwError({
-              data: value?.data,
-              meta: value?.meta,
-              title:
-                `Try to start shabondi: "${params.name}" failed after retry ${index} times. ` +
-                `Expected state: ${SERVICE_STATE.RUNNING}, Actual state: ${value.data.state}`,
-            }),
-            of(value).pipe(delay(2000)),
-          ),
-        ),
-      ),
-    ),
-    map(([, data]) => normalize(data, schema.shabondi)),
-    map((normalizedData) => merge(normalizedData, { shabondiId })),
-    map((normalizedData) => {
-      options.paperApi?.updateElement(params.id, {
-        status: CELL_STATUS.running,
-      });
-
-      return actions.startShabondi.success(normalizedData);
-    }),
-    startWith(actions.startShabondi.request({ shabondiId })),
-    catchError((err) => {
-      options.paperApi?.updateElement(params.id, {
-        status: err?.data?.state?.toLowerCase() ?? previousStatus,
-      });
-      return from([
-        actions.startShabondi.failure(merge(err, { shabondiId })),
-        actions.createEventLog.trigger({ ...err, type: LOG_LEVEL.error }),
-      ]);
-    }),
-  );
-};
+import { startShabondi } from 'observables';
+import { CELL_STATUS, LOG_LEVEL } from 'const';
 
 export default (action$) =>
   action$.pipe(
     ofType(actions.startShabondi.TRIGGER),
     map((action) => action.payload),
     distinctUntilChanged(),
-    mergeMap((value) => startShabondi$(value)),
+    mergeMap(({ values, options = {} }) => {
+      const shabondiId = getId(values);
+      const previousStatus =
+        options.paperApi?.getCell(values?.id)?.status || CELL_STATUS.stopped;
+      const updateStatus = (status) =>
+        options.paperApi?.updateElement(values.id, {
+          status,
+        });
+
+      updateStatus(CELL_STATUS.pending);
+      return startShabondi(values).pipe(
+        tap(() => updateStatus(CELL_STATUS.running)),
+        map((data) => normalize(data, schema.shabondi)),
+        map((normalizedData) => merge(normalizedData, { shabondiId })),
+        map((normalizedData) => actions.startShabondi.success(normalizedData)),
+        startWith(actions.startShabondi.request({ shabondiId })),
+        catchError((err) => {
+          updateStatus(err?.data?.state?.toLowerCase() ?? previousStatus);
+          return of(
+            actions.startShabondi.failure(merge(err, { shabondiId })),
+            actions.createEventLog.trigger({ ...err, type: LOG_LEVEL.error }),
+          );
+        }),
+      );
+    }),
   );

@@ -16,15 +16,16 @@
 
 import { omit } from 'lodash';
 import { TestScheduler } from 'rxjs/testing';
-import { of } from 'rxjs';
+import { timer, of, throwError } from 'rxjs';
+import { delay, switchMap } from 'rxjs/operators';
 
-import { LOG_LEVEL, CELL_STATUS } from 'const';
-import startStreamEpic from '../../stream/startStreamEpic';
 import * as streamApi from 'api/streamApi';
 import * as actions from 'store/actions';
+import startStreamEpic from '../../stream/startStreamEpic';
 import { getId } from 'utils/object';
 import { entity as streamEntity } from 'api/__mocks__/streamApi';
 import { SERVICE_STATE } from 'api/apiInterface/clusterInterface';
+import { LOG_LEVEL, CELL_STATUS } from 'const';
 
 jest.mock('api/streamApi');
 const paperApi = {
@@ -50,7 +51,7 @@ it('should start the stream', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a        ';
-    const expected = '--a 499ms v';
+    const expected = '--a 199ms v';
     const subs = '    ^----------';
     const id = '1234';
 
@@ -58,7 +59,7 @@ it('should start the stream', () => {
       a: {
         type: actions.startStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id },
+          values: { ...streamEntity, id },
           options: { paperApi },
         },
       },
@@ -112,8 +113,8 @@ it('should fail after reaching the retry limit', () => {
       of({
         status: 200,
         title: 'retry mock get data',
-        data: { ...omit(streamEntity) },
-      }),
+        data: { ...omit(streamEntity, 'state') },
+      }).pipe(delay(100)),
     );
   }
   // get result finally
@@ -122,15 +123,16 @@ it('should fail after reaching the retry limit', () => {
       status: 200,
       title: 'retry mock get data',
       data: { ...streamEntity, state: SERVICE_STATE.RUNNING },
-    }),
+    }).pipe(delay(100)),
   );
 
   makeTestScheduler().run((helpers) => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a            ';
-    // we failed after retry 5 times (5 * 2000ms = 10s)
-    const expected = '--a 9999ms (vz)';
+    // start 1 time, get 6 times, retry 5 times
+    // => 100ms * 1 + 100ms * 6 + 31s = 31700ms
+    const expected = '--a 31699ms (vu)';
     const subs = '    ^--------------';
     const id = '1234';
 
@@ -138,7 +140,7 @@ it('should fail after reaching the retry limit', () => {
       a: {
         type: actions.startStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id },
+          values: { ...streamEntity, id },
           options: { paperApi },
         },
       },
@@ -157,25 +159,21 @@ it('should fail after reaching the retry limit', () => {
         payload: {
           streamId,
           data: streamEntity,
-          meta: undefined,
-          title: `Try to start stream: "${streamEntity.name}" failed after retry 5 times. Expected state: RUNNING, Actual state: undefined`,
+          status: 200,
+          title: `Failed to start stream ${streamEntity.name}: Unable to confirm the status of the stream is running`,
         },
       },
-      z: {
+      u: {
         type: actions.createEventLog.TRIGGER,
         payload: {
           streamId,
           data: streamEntity,
-          meta: undefined,
-          title: `Try to start stream: "${streamEntity.name}" failed after retry 5 times. Expected state: RUNNING, Actual state: undefined`,
+          status: 200,
+          title: `Failed to start stream ${streamEntity.name}: Unable to confirm the status of the stream is running`,
           type: LOG_LEVEL.error,
         },
       },
     });
-
-    expectSubscriptions(action$.subscriptions).toBe(subs);
-
-    flush();
 
     expectSubscriptions(action$.subscriptions).toBe(subs);
 
@@ -196,7 +194,7 @@ it('start stream multiple times should be worked once', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a---a 1s a 10s ';
-    const expected = '--a       499ms v';
+    const expected = '--a       199ms v';
     const subs = '    ^----------------';
     const id = '1234';
 
@@ -204,7 +202,7 @@ it('start stream multiple times should be worked once', () => {
       a: {
         type: actions.startStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id },
+          values: { ...streamEntity, id },
           options: { paperApi },
         },
       },
@@ -261,7 +259,7 @@ it('start different stream should be worked correctly', () => {
       clientPort: 3333,
     };
     const input = '   ^-a--b           ';
-    const expected = '--a--b 496ms y--z';
+    const expected = '--a--b 196ms y--z';
     const subs = '    ^----------------';
     const id1 = '1234';
     const id2 = '5678';
@@ -270,14 +268,14 @@ it('start different stream should be worked correctly', () => {
       a: {
         type: actions.startStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id: id1 },
+          values: { ...streamEntity, id: id1 },
           options: { paperApi },
         },
       },
       b: {
         type: actions.startStream.TRIGGER,
         payload: {
-          params: { ...anotherStreamEntity, id: id2 },
+          values: { ...anotherStreamEntity, id: id2 },
           options: { paperApi },
         },
       },
@@ -341,6 +339,90 @@ it('start different stream should be worked correctly', () => {
     });
     expect(paperApi.updateElement).toHaveBeenCalledWith(id1, {
       status: CELL_STATUS.running,
+    });
+  });
+});
+
+it('should stop retrying when an API error occurs', () => {
+  const spyStart = jest.spyOn(streamApi, 'start');
+
+  spyStart.mockReturnValueOnce(
+    timer().pipe(
+      delay(100),
+      switchMap(() =>
+        throwError({
+          status: 400,
+          title: 'Failed to start stream aaa',
+          data: {
+            error: { code: 'mock', message: 'mock', stack: 'mock' },
+          },
+        }),
+      ),
+    ),
+  );
+
+  makeTestScheduler().run((helpers) => {
+    const { hot, expectObservable, expectSubscriptions, flush } = helpers;
+
+    const input = '   ^-a            ';
+    const expected = '--a 99ms (vu)';
+    const subs = '    ^--------------';
+    const id = '1234';
+
+    const action$ = hot(input, {
+      a: {
+        type: actions.startStream.TRIGGER,
+        payload: {
+          values: {
+            ...streamEntity,
+            id,
+          },
+          options: { paperApi },
+        },
+      },
+    });
+    const output$ = startStreamEpic(action$);
+
+    expectObservable(output$).toBe(expected, {
+      a: {
+        type: actions.startStream.REQUEST,
+        payload: {
+          streamId,
+        },
+      },
+      v: {
+        type: actions.startStream.FAILURE,
+        payload: {
+          status: 400,
+          title: 'Failed to start stream aaa',
+          data: { error: { code: 'mock', message: 'mock', stack: 'mock' } },
+          streamId,
+        },
+      },
+      u: {
+        type: actions.createEventLog.TRIGGER,
+        payload: {
+          status: 400,
+          title: 'Failed to start stream aaa',
+          data: { error: { code: 'mock', message: 'mock', stack: 'mock' } },
+          streamId,
+          type: LOG_LEVEL.error,
+        },
+      },
+    });
+
+    expectSubscriptions(action$.subscriptions).toBe(subs);
+
+    flush();
+
+    expect(spyStart).toHaveBeenCalled();
+
+    expect(paperApi.updateElement).toHaveBeenCalledTimes(2);
+    expect(paperApi.updateElement).toHaveBeenCalledWith(id, {
+      status: CELL_STATUS.pending,
+    });
+    expect(paperApi.updateElement).toHaveBeenCalledWith(id, {
+      status: CELL_STATUS.stopped,
     });
   });
 });

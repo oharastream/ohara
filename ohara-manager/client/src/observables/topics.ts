@@ -22,7 +22,7 @@ import { isEmpty } from 'lodash';
 import { ObjectKey } from 'api/apiInterface/basicInterface';
 import { TopicData, TopicResponse } from 'api/apiInterface/topicInterface';
 import * as topicApi from 'api/topicApi';
-import { RETRY_CONFIG } from 'const';
+import { RETRY_STRATEGY } from 'const';
 import { getKey } from 'utils/object';
 import { hashByGroupAndName } from 'utils/sha';
 
@@ -59,7 +59,7 @@ export function startTopic(key: ObjectKey) {
     concatAll(),
     last(),
     map((res) => res.data),
-    retryBackoff(RETRY_CONFIG),
+    retryBackoff(RETRY_STRATEGY),
   );
 }
 
@@ -81,7 +81,7 @@ export function stopTopic(key: ObjectKey) {
     concatAll(),
     last(),
     map((res) => res.data),
-    retryBackoff(RETRY_CONFIG),
+    retryBackoff(RETRY_STRATEGY),
   );
 }
 

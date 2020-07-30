@@ -21,7 +21,7 @@ import { retryBackoff } from 'backoff-rxjs';
 import { ObjectKey } from 'api/apiInterface/basicInterface';
 import { ClusterResponse } from 'api/apiInterface/clusterInterface';
 import * as zookeeperApi from 'api/zookeeperApi';
-import { RETRY_CONFIG } from 'const';
+import { RETRY_STRATEGY } from 'const';
 import { isServiceStarted, isServiceStopped } from './utils';
 
 export function createZookeeper(values: any) {
@@ -45,12 +45,12 @@ export function startZookeeper(key: ObjectKey) {
           };
         }
       }),
+      retryBackoff(RETRY_STRATEGY),
     ),
   ).pipe(
     concatAll(),
     last(),
     map((res) => res.data),
-    retryBackoff(RETRY_CONFIG),
   );
 }
 
@@ -67,12 +67,12 @@ export function stopZookeeper(key: ObjectKey) {
           };
         }
       }),
+      retryBackoff(RETRY_STRATEGY),
     ),
   ).pipe(
     concatAll(),
     last(),
     map((res) => res.data),
-    retryBackoff(RETRY_CONFIG),
   );
 }
 

@@ -46,7 +46,7 @@ it('should delete a connector', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a           ';
-    const expected = '--a 999ms (uv)';
+    const expected = '--a 99ms (uv)';
     const subs = '    ^-------------';
     const id = '1234';
     const action$ = hot(input, {
@@ -100,7 +100,7 @@ it('should delete multiple connectors', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a---b               ';
-    const expected = '--a---b 995ms (uv)(xy)';
+    const expected = '--a---b 95ms (uv)(xy)';
     const subs = '    ^---------------------';
     const anotherConnectorEntity = {
       ...connectorEntity,
@@ -184,7 +184,7 @@ it(`should not call paperApi when the options params are not supplied`, () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a           ';
-    const expected = '--a 999ms (uv)';
+    const expected = '--a 99ms (uv)';
     const subs = '    ^-------------';
 
     const action$ = hot(input, {
@@ -230,7 +230,7 @@ it('delete same connector within period should be created once only', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-aa 10s a----';
-    const expected = '--a 999ms (uv)';
+    const expected = '--a 99ms (uv)';
     const subs = '    ^-------------';
     const id = '1234';
 

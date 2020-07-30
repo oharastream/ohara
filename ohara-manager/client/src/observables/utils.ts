@@ -16,15 +16,16 @@
 
 import { has } from 'lodash';
 import { SERVICE_STATE, ClusterData } from 'api/apiInterface/clusterInterface';
+import { Data as ConnectorData } from 'api/apiInterface/connectorInterface';
 
 export function isServiceRunning(res: any) {
   return res?.data?.state === SERVICE_STATE.RUNNING;
 }
 
-export function isServiceStarted(data: ClusterData) {
+export function isServiceStarted(data: ClusterData | ConnectorData) {
   return data.state === SERVICE_STATE.RUNNING;
 }
 
-export function isServiceStopped(data: ClusterData) {
+export function isServiceStopped(data: ClusterData | ConnectorData) {
   return !has(data, 'state');
 }

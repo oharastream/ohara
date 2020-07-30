@@ -17,86 +17,50 @@
 import { merge } from 'lodash';
 import { normalize } from 'normalizr';
 import { ofType } from 'redux-observable';
-import { of, defer, throwError, iif, zip, from } from 'rxjs';
+import { of } from 'rxjs';
 import {
   catchError,
-  map,
-  startWith,
-  retryWhen,
-  delay,
-  concatMap,
-  mergeMap,
   distinctUntilChanged,
+  map,
+  mergeMap,
+  startWith,
+  tap,
 } from 'rxjs/operators';
 
-import * as streamApi from 'api/streamApi';
+import { CELL_STATUS, LOG_LEVEL } from 'const';
 import * as actions from 'store/actions';
 import * as schema from 'store/schema';
+import { stopStream } from 'observables';
 import { getId } from 'utils/object';
-import { CELL_STATUS, LOG_LEVEL } from 'const';
-
-/* eslint-disable no-unused-expressions */
-export const stopStream$ = (value) => {
-  const { params, options = {} } = value;
-  const streamId = getId(params);
-
-  const previousStatus =
-    options.paperApi?.getCell(params?.id)?.status || CELL_STATUS.stopped;
-
-  options.paperApi?.updateElement(params.id, {
-    status: CELL_STATUS.pending,
-  });
-  return zip(
-    defer(() => streamApi.stop(params)),
-    defer(() => streamApi.get(params)).pipe(
-      map((res) => {
-        if (res.data.state) throw res;
-        else return res.data;
-      }),
-    ),
-  ).pipe(
-    retryWhen((errors) =>
-      errors.pipe(
-        concatMap((value, index) =>
-          iif(
-            () => index > 4,
-            throwError({
-              data: value?.data,
-              meta: value?.meta,
-              title:
-                `Try to stop stream: "${params.name}" failed after retry ${index} times. ` +
-                `Expected state is nonexistent, Actual state: ${value.data.state}`,
-            }),
-            of(value).pipe(delay(2000)),
-          ),
-        ),
-      ),
-    ),
-    map(([, data]) => normalize(data, schema.stream)),
-    map((normalizedData) => merge(normalizedData, { streamId })),
-    map((normalizedData) => {
-      options.paperApi?.updateElement(params.id, {
-        status: CELL_STATUS.stopped,
-      });
-      return actions.stopStream.success(normalizedData);
-    }),
-    startWith(actions.stopStream.request({ streamId })),
-    catchError((err) => {
-      options.paperApi?.updateElement(params.id, {
-        status: err?.data?.state?.toLowerCase() ?? previousStatus,
-      });
-      return from([
-        actions.stopStream.failure(merge(err, { streamId })),
-        actions.createEventLog.trigger({ ...err, type: LOG_LEVEL.error }),
-      ]);
-    }),
-  );
-};
 
 export default (action$) =>
   action$.pipe(
     ofType(actions.stopStream.TRIGGER),
     map((action) => action.payload),
     distinctUntilChanged(),
-    mergeMap((value) => stopStream$(value)),
+    mergeMap(({ values, options = {} }) => {
+      const streamId = getId(values);
+      const previousStatus =
+        options.paperApi?.getCell(values?.id)?.status || CELL_STATUS.running;
+      const updateStatus = (status) =>
+        options.paperApi?.updateElement(values.id, {
+          status,
+        });
+
+      updateStatus(CELL_STATUS.pending);
+      return stopStream(values).pipe(
+        tap(() => updateStatus(CELL_STATUS.stopped)),
+        map((data) => normalize(data, schema.stream)),
+        map((normalizedData) => merge(normalizedData, { streamId })),
+        map((normalizedData) => actions.stopStream.success(normalizedData)),
+        startWith(actions.stopStream.request({ streamId })),
+        catchError((err) => {
+          updateStatus(err?.data?.state?.toLowerCase() ?? previousStatus);
+          return of(
+            actions.stopStream.failure(merge(err, { streamId })),
+            actions.createEventLog.trigger({ ...err, type: LOG_LEVEL.error }),
+          );
+        }),
+      );
+    }),
   );

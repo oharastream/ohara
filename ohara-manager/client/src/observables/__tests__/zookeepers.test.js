@@ -91,9 +91,9 @@ it('start zookeeper should run in two minutes', () => {
       name: zookeeperEntity.name,
     };
 
-    // start 6 times, get 6 times, retry 5 times
-    // => 100 * 6 + 100 * 6 + 2000 * 5 = 11200ms
-    const expected = '11200ms (v|)';
+    // start 1 time, get 6 times, retry 5 times
+    // => 100ms * 1 + 100ms * 6 + 31s = 31700ms
+    const expected = '31700ms (v|)';
 
     const output$ = startZookeeper(params, true);
 
@@ -105,9 +105,7 @@ it('start zookeeper should run in two minutes', () => {
 
     expect(spyStart).toHaveBeenCalled();
     expect(spyGet).toHaveBeenCalled();
-
-    // The mock function is called six times
-    expect(spyStart.mock.calls.length).toBe(6);
+    expect(spyStart.mock.calls.length).toBe(1);
     expect(spyGet.mock.calls.length).toBe(6);
   });
 });

@@ -15,16 +15,17 @@
  */
 
 import { omit } from 'lodash';
-import { of } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
+import { timer, of, throwError } from 'rxjs';
+import { delay, switchMap } from 'rxjs/operators';
 
-import { LOG_LEVEL, CELL_STATUS } from 'const';
-import startShabondiEpic from '../../shabondi/startShabondiEpic';
 import * as shabondiApi from 'api/shabondiApi';
 import * as actions from 'store/actions';
+import startShabondiEpic from '../../shabondi/startShabondiEpic';
 import { getId } from 'utils/object';
 import { entity as shabondiEntity } from 'api/__mocks__/shabondiApi';
 import { SERVICE_STATE } from 'api/apiInterface/clusterInterface';
+import { LOG_LEVEL, CELL_STATUS } from 'const';
 
 jest.mock('api/shabondiApi');
 
@@ -51,7 +52,7 @@ it('should start the shabondi', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a       ';
-    const expected = '--a 99ms v';
+    const expected = '--a 199ms v';
     const subs = '    ^---------';
     const id = '1234';
 
@@ -59,7 +60,7 @@ it('should start the shabondi', () => {
       a: {
         type: actions.startShabondi.TRIGGER,
         payload: {
-          params: { ...shabondiEntity, id },
+          values: { ...shabondiEntity, id },
           options: { paperApi },
         },
       },
@@ -114,7 +115,7 @@ it('should fail after reaching the retry limit', () => {
         status: 200,
         title: 'retry mock get data',
         data: { ...omit(shabondiEntity, 'state') },
-      }),
+      }).pipe(delay(100)),
     );
   }
   // get result finally
@@ -123,15 +124,16 @@ it('should fail after reaching the retry limit', () => {
       status: 200,
       title: 'retry mock get data',
       data: { ...shabondiEntity, state: SERVICE_STATE.RUNNING },
-    }),
+    }).pipe(delay(100)),
   );
 
   makeTestScheduler().run((helpers) => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a            ';
-    // we failed after retry 5 times (5 * 2000ms = 10s)
-    const expected = '--a 9999ms (vu)';
+    // start 1 time, get 6 times, retry 5 times
+    // => 100ms * 1 + 100ms * 6 + 31s = 31700ms
+    const expected = '--a 31699ms (vu)';
     const subs = '    ^--------------';
     const id = '1234';
 
@@ -139,7 +141,10 @@ it('should fail after reaching the retry limit', () => {
       a: {
         type: actions.startShabondi.TRIGGER,
         payload: {
-          params: { ...shabondiEntity, id },
+          values: {
+            ...shabondiEntity,
+            id,
+          },
           options: { paperApi },
         },
       },
@@ -158,8 +163,8 @@ it('should fail after reaching the retry limit', () => {
         payload: {
           shabondiId,
           data: shabondiEntity,
-          meta: undefined,
-          title: `Try to start shabondi: "${shabondiEntity.name}" failed after retry 5 times. Expected state: RUNNING, Actual state: undefined`,
+          status: 200,
+          title: `Failed to start shabondi ${shabondiEntity.name}: Unable to confirm the status of the shabondi is running`,
         },
       },
       u: {
@@ -167,8 +172,8 @@ it('should fail after reaching the retry limit', () => {
         payload: {
           shabondiId,
           data: shabondiEntity,
-          meta: undefined,
-          title: `Try to start shabondi: "${shabondiEntity.name}" failed after retry 5 times. Expected state: RUNNING, Actual state: undefined`,
+          status: 200,
+          title: `Failed to start shabondi ${shabondiEntity.name}: Unable to confirm the status of the shabondi is running`,
           type: LOG_LEVEL.error,
         },
       },
@@ -193,7 +198,7 @@ it('start shabondi multiple times should be worked once', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a---a 1s a 10s ';
-    const expected = '--a        99ms v';
+    const expected = '--a       199ms v';
     const subs = '    ^----------------';
     const id = '1234';
 
@@ -201,7 +206,7 @@ it('start shabondi multiple times should be worked once', () => {
       a: {
         type: actions.startShabondi.TRIGGER,
         payload: {
-          params: { ...shabondiEntity, id },
+          values: { ...shabondiEntity, id },
           options: { paperApi },
         },
       },
@@ -258,7 +263,7 @@ it('start different shabondi should be worked correctly', () => {
       clientPort: 3333,
     };
     const input = '   ^-a--b          ';
-    const expected = '--a--b 96ms y--z';
+    const expected = '--a--b 196ms y--z';
     const subs = '    ^---------------';
     const id1 = '1234';
     const id2 = '5678';
@@ -267,14 +272,14 @@ it('start different shabondi should be worked correctly', () => {
       a: {
         type: actions.startShabondi.TRIGGER,
         payload: {
-          params: { ...shabondiEntity, id: id1 },
+          values: { ...shabondiEntity, id: id1 },
           options: { paperApi },
         },
       },
       b: {
         type: actions.startShabondi.TRIGGER,
         payload: {
-          params: { ...anotherShabondiEntity, id: id2 },
+          values: { ...anotherShabondiEntity, id: id2 },
           options: { paperApi },
         },
       },
@@ -338,6 +343,90 @@ it('start different shabondi should be worked correctly', () => {
     });
     expect(paperApi.updateElement).toHaveBeenCalledWith(id1, {
       status: CELL_STATUS.running,
+    });
+  });
+});
+
+it('should stop retrying when an API error occurs', () => {
+  const spyStart = jest.spyOn(shabondiApi, 'start');
+
+  spyStart.mockReturnValueOnce(
+    timer().pipe(
+      delay(100),
+      switchMap(() =>
+        throwError({
+          status: 400,
+          title: 'Failed to start shabondi aaa',
+          data: {
+            error: { code: 'mock', message: 'mock', stack: 'mock' },
+          },
+        }),
+      ),
+    ),
+  );
+
+  makeTestScheduler().run((helpers) => {
+    const { hot, expectObservable, expectSubscriptions, flush } = helpers;
+
+    const input = '   ^-a            ';
+    const expected = '--a 99ms (vu)';
+    const subs = '    ^--------------';
+    const id = '1234';
+
+    const action$ = hot(input, {
+      a: {
+        type: actions.startShabondi.TRIGGER,
+        payload: {
+          values: {
+            ...shabondiEntity,
+            id,
+          },
+          options: { paperApi },
+        },
+      },
+    });
+    const output$ = startShabondiEpic(action$);
+
+    expectObservable(output$).toBe(expected, {
+      a: {
+        type: actions.startShabondi.REQUEST,
+        payload: {
+          shabondiId,
+        },
+      },
+      v: {
+        type: actions.startShabondi.FAILURE,
+        payload: {
+          status: 400,
+          title: 'Failed to start shabondi aaa',
+          data: { error: { code: 'mock', message: 'mock', stack: 'mock' } },
+          shabondiId,
+        },
+      },
+      u: {
+        type: actions.createEventLog.TRIGGER,
+        payload: {
+          status: 400,
+          title: 'Failed to start shabondi aaa',
+          data: { error: { code: 'mock', message: 'mock', stack: 'mock' } },
+          shabondiId,
+          type: LOG_LEVEL.error,
+        },
+      },
+    });
+
+    expectSubscriptions(action$.subscriptions).toBe(subs);
+
+    flush();
+
+    expect(spyStart).toHaveBeenCalled();
+
+    expect(paperApi.updateElement).toHaveBeenCalledTimes(2);
+    expect(paperApi.updateElement).toHaveBeenCalledWith(id, {
+      status: CELL_STATUS.pending,
+    });
+    expect(paperApi.updateElement).toHaveBeenCalledWith(id, {
+      status: CELL_STATUS.stopped,
     });
   });
 });

@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-import { Observable, defer, forkJoin, of, throwError, zip } from 'rxjs';
-import { catchError, map, mapTo, mergeMap } from 'rxjs/operators';
+/* eslint-disable no-throw-literal */
+import { Observable, defer, forkJoin, of } from 'rxjs';
+import { concatAll, last, map, mapTo, mergeMap, tap } from 'rxjs/operators';
 import { isEmpty, union, uniqWith } from 'lodash';
 import { retryBackoff } from 'backoff-rxjs';
 
 import { ObjectKey } from 'api/apiInterface/basicInterface';
-import { SERVICE_STATE, ClusterData } from 'api/apiInterface/clusterInterface';
+import {
+  ClusterData,
+  ClusterResponse,
+} from 'api/apiInterface/clusterInterface';
 import * as shabondiApi from 'api/shabondiApi';
-import { RETRY_CONFIG } from 'const';
+import { RETRY_STRATEGY } from 'const';
 import { fetchPipelines } from 'observables';
 import { getKey, isEqualByKey } from 'utils/object';
 import { hashByGroupAndName } from 'utils/sha';
-import { isServiceRunning } from './utils';
+import { isServiceStarted, isServiceStopped } from './utils';
 
 export function createShabondi(values: any): Observable<ClusterData> {
   return defer(() => shabondiApi.create(values)).pipe(map((res) => res.data));
@@ -45,30 +49,25 @@ export function fetchShabondis(
   );
 }
 
-export function startShabondi(key: ObjectKey): Observable<ClusterData> {
-  return zip(
-    // attempt to start at intervals
+export function startShabondi(key: ObjectKey) {
+  // try to start until the shabondi starts successfully
+  return of(
     defer(() => shabondiApi.start(key)),
-    // wait until the service is running
     defer(() => shabondiApi.get(key)).pipe(
-      map((res) => {
-        if (!isServiceRunning(res)) throw res;
-        return res.data;
+      tap((res: ClusterResponse) => {
+        if (!isServiceStarted(res.data)) {
+          throw {
+            ...res,
+            title: `Failed to start shabondi ${key.name}: Unable to confirm the status of the shabondi is running`,
+          };
+        }
       }),
+      retryBackoff(RETRY_STRATEGY),
     ),
   ).pipe(
-    map(([, data]) => data),
-    // retry every 2 seconds, up to 10 times
-    retryBackoff(RETRY_CONFIG),
-    catchError((error) =>
-      throwError({
-        data: error?.data,
-        meta: error?.meta,
-        title:
-          `Try to start shabondi: "${key.name}" failed after retry ${RETRY_CONFIG.maxRetries} times. ` +
-          `Expected state: ${SERVICE_STATE.RUNNING}, Actual state: ${error.data.state}`,
-      }),
-    ),
+    concatAll(),
+    last(),
+    map((res) => res.data),
   );
 }
 
@@ -76,37 +75,30 @@ export function deleteShabondi(key: ObjectKey) {
   return defer(() => shabondiApi.remove(key));
 }
 
-export function stopShabondi(key: ObjectKey): Observable<ClusterData> {
-  return zip(
-    // attempt to stop at intervals
+export function stopShabondi(key: ObjectKey) {
+  // try to stop until the shabondi really stops
+  return of(
     defer(() => shabondiApi.stop(key)),
-    // wait until the service is not running
     defer(() => shabondiApi.get(key)).pipe(
-      map((res) => {
-        if (res.data?.state) throw res;
-        return res.data;
+      tap((res: ClusterResponse) => {
+        if (!isServiceStopped(res.data)) {
+          throw {
+            ...res,
+            title: `Failed to stop shabondi ${key.name}: Unable to confirm the status of the shabondi is not running`,
+          };
+        }
       }),
+      retryBackoff(RETRY_STRATEGY),
     ),
   ).pipe(
-    map(([, data]) => data),
-    // retry every 2 seconds, up to 10 times
-    retryBackoff(RETRY_CONFIG),
-    catchError((error) =>
-      throwError({
-        data: error?.data,
-        meta: error?.meta,
-        title:
-          `Try to stop shabondi: "${key.name}" failed after retry ${RETRY_CONFIG.maxRetries} times. ` +
-          `Expected state is nonexistent, Actual state: ${error.data.state}`,
-      }),
-    ),
+    concatAll(),
+    last(),
+    map((res) => res.data),
   );
 }
 
 // Fetch and stop all shabondis for this workspace
-export function fetchAndStopShabondis(
-  workspaceKey: ObjectKey,
-): Observable<ClusterData[]> {
+export function fetchAndStopShabondis(workspaceKey: ObjectKey) {
   return fetchPipelines(workspaceKey).pipe(
     mergeMap((pipelines) => {
       if (isEmpty(pipelines)) return of([]);

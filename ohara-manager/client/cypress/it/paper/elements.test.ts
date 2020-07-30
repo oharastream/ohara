@@ -452,34 +452,28 @@ describe('Elements', () => {
         method: 'PUT',
         url: 'api/connectors/*/start**',
         response: {},
-        delay: 1500,
       });
 
       const { sourceName } = createSourceAndTopic();
       cy.getCell(sourceName).trigger('mouseover');
       cy.cellAction(sourceName, CELL_ACTION.start).click();
 
-      cy.get('#paper').within(() => {
-        cy.findByText(sourceName).should(($source) => {
-          const $container = $source.parents('.connector');
-          const $menu = $container.find('.menu');
+      // Should have the status of pending
+      cy.getElementStatus(sourceName).should('have.text', CELL_STATUS.pending);
 
-          // Should be pending
-          expect($container.find('.status-value').text()).to.eq(
-            CELL_STATUS.pending,
-          );
+      // All action are disabled right now
+      cy.get('#paper')
+        .findByText(sourceName)
+        .parents('.connector')
+        .find('.menu')
+        .find('.is-disabled')
+        .should('have.length', 5);
 
-          // All action are disabled right now
-          expect($menu.find('.is-disabled').length).to.eq(5);
-        });
-
-        // Wait until connector is not in pending state, and so we can manually stop it later
-        cy.findByText(sourceName).should(($source) => {
-          expect(
-            $source.parents('.connector').find('.status-value').text(),
-          ).not.to.eq(CELL_STATUS.pending);
-        });
-      });
+      // Wait until connector is not in pending state, and so we can manually stop it later
+      cy.getElementStatus(sourceName).should(
+        'not.have.text',
+        CELL_STATUS.pending,
+      );
 
       // Manually stop the connector, this ensures it gets the "stop" state and could be properly cleanup later
       cy.getCell(sourceName).trigger('mouseover');

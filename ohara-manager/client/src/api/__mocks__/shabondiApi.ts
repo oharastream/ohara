@@ -72,7 +72,7 @@ export const create = (params: ServiceBody): Observable<ClusterResponse> =>
     status: 200,
     title: 'mock create shabondi data',
     data: { ...runtimeData, ...params },
-  }).pipe(delay(2000));
+  }).pipe(delay(100));
 
 // simulate a promise request with a delay of 1s
 export const remove = (): Observable<BasicResponse> =>

@@ -68,8 +68,8 @@ it('stop streams should be worked correctly', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a        ';
-    const expected = '--a 499ms v';
-    const subs = ['   ^----------', '--^ 499ms !'];
+    const expected = '--a 199ms v';
+    const subs = ['   ^----------', '--^ 199ms !'];
 
     const action$ = hot(input, {
       a: {

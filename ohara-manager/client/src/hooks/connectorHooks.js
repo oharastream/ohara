@@ -89,7 +89,7 @@ export const useStartConnectorAction = () => {
   return (values, options) =>
     dispatch(
       actions.startConnector.trigger({
-        params: { ...values, group },
+        values: { ...values, group },
         options,
       }),
     );
@@ -101,7 +101,7 @@ export const useStopConnectorAction = () => {
   return (values, options) =>
     dispatch(
       actions.stopConnector.trigger({
-        params: { ...values, group },
+        values: { ...values, group },
         options,
       }),
     );

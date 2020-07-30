@@ -15,6 +15,7 @@
  */
 
 import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { TestScheduler } from 'rxjs/testing';
 
 import { LOG_LEVEL } from 'const';
@@ -86,7 +87,7 @@ it('inspect worker failed after reach retry limit', () => {
         status: 200,
         title: 'retry mock get data',
         data: { ...workerInfoEntity, classInfos: [] },
-      }),
+      }).pipe(delay(100)),
     );
   }
   // get result finally
@@ -95,15 +96,17 @@ it('inspect worker failed after reach retry limit', () => {
       status: 200,
       title: 'retry mock get data',
       data: { ...workerInfoEntity, classInfos: [] },
-    }),
+    }).pipe(delay(100)),
   );
 
   makeTestScheduler().run((helpers) => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a             ';
-    const expected = '--a 19999ms (vu)';
-    const subs = ['   ^------------', '--^ 19999ms !'];
+    // get 6 times, retry 5 times
+    // => 100ms * 6 + 31s = 31600ms
+    const expected = '--a 31599ms (vu)';
+    const subs = ['   ^------------', '--^ 31599ms !'];
 
     const action$ = hot(input, {
       a: {
@@ -135,7 +138,10 @@ it('inspect worker failed after reach retry limit', () => {
       u: {
         type: actions.createEventLog.TRIGGER,
         payload: {
-          data: { ...workerInfoEntity, classInfos: [] },
+          data: {
+            ...workerInfoEntity,
+            classInfos: [],
+          },
           status: 200,
           title: 'retry mock get data',
           type: LOG_LEVEL.error,

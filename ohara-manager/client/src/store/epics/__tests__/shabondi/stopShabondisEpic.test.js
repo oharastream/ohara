@@ -68,8 +68,8 @@ it('stop shabondis should be worked correctly', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a       ';
-    const expected = '--a 99ms v';
-    const subs = ['   ^---------', '--^ 99ms !'];
+    const expected = '--a 199ms v';
+    const subs = ['   ^---------', '--^ 199ms !'];
 
     const action$ = hot(input, {
       a: {

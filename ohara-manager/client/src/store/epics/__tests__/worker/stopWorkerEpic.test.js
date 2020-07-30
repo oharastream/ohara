@@ -118,12 +118,12 @@ it('stop worker failed after reach retry limit', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a                   ';
-    // stop 11 times, get 11 times, retry 10 times
-    // => 100 * 11 + 100 * 11 + 2000 * 10 = 22200ms
-    const expected = '--a 22199ms (vu)';
+    // stop 1 time, get 6 times, retry 5 times
+    // => 100ms * 1 + 100ms * 6 + 31s = 31700ms
+    const expected = '--a 31699ms (vu)';
     const subs = [
       '               ^---------------------',
-      '               --^ 22199ms !   ',
+      '               --^ 31699ms !   ',
     ];
 
     const action$ = hot(input, {
@@ -145,7 +145,10 @@ it('stop worker failed after reach retry limit', () => {
         type: actions.stopWorker.FAILURE,
         payload: {
           workerId: wkId,
-          data: { ...workerEntity, state: SERVICE_STATE.RUNNING },
+          data: {
+            ...workerEntity,
+            state: SERVICE_STATE.RUNNING,
+          },
           status: 200,
           title: `Failed to stop worker ${workerEntity.name}: Unable to confirm the status of the worker is not running`,
         },
@@ -154,7 +157,10 @@ it('stop worker failed after reach retry limit', () => {
         type: actions.createEventLog.TRIGGER,
         payload: {
           workerId: wkId,
-          data: { ...workerEntity, state: SERVICE_STATE.RUNNING },
+          data: {
+            ...workerEntity,
+            state: SERVICE_STATE.RUNNING,
+          },
           status: 200,
           title: `Failed to stop worker ${workerEntity.name}: Unable to confirm the status of the worker is not running`,
           type: LOG_LEVEL.error,
@@ -166,8 +172,8 @@ it('stop worker failed after reach retry limit', () => {
 
     flush();
 
-    expect(spyStopWorker).toHaveBeenCalledTimes(11);
-    expect(spyGetWorker).toHaveBeenCalledTimes(11);
+    expect(spyStopWorker).toHaveBeenCalledTimes(1);
+    expect(spyGetWorker).toHaveBeenCalledTimes(6);
   });
 });
 

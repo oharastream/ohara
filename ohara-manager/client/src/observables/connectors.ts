@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-import { Observable, defer, forkJoin, of, throwError, zip } from 'rxjs';
-import { catchError, map, mapTo, mergeMap } from 'rxjs/operators';
+/* eslint-disable no-throw-literal */
+import { Observable, defer, forkJoin, of } from 'rxjs';
+import { concatAll, last, map, mapTo, mergeMap, tap } from 'rxjs/operators';
 import { isEmpty, union, uniqWith } from 'lodash';
 import { retryBackoff } from 'backoff-rxjs';
 
 import { ObjectKey } from 'api/apiInterface/basicInterface';
 import {
-  State,
+  ConnectorResponse,
   Data as ConnectorData,
 } from 'api/apiInterface/connectorInterface';
 import * as connectorApi from 'api/connectorApi';
-import { RETRY_CONFIG } from 'const';
+import { RETRY_STRATEGY } from 'const';
 import { fetchPipelines } from 'observables';
 import { hashByGroupAndName } from 'utils/sha';
 import { getKey, isEqualByKey } from 'utils/object';
+import { isServiceStarted, isServiceStopped } from './utils';
 
 export function createConnector(values: any) {
   return defer(() => connectorApi.create(values)).pipe(map((res) => res.data));
@@ -51,54 +53,52 @@ export function fetchConnectors(
 }
 
 export function startConnector(key: ObjectKey) {
-  return zip(
-    // attempt to start at intervals
+  // try to start until the connector starts successfully
+  return of(
     defer(() => connectorApi.start(key)),
-    // wait until the service is running
     defer(() => connectorApi.get(key)).pipe(
-      map((res: any) => {
-        if (res?.data?.state === State.RUNNING) return res.data;
-        throw res;
+      tap((res: ConnectorResponse) => {
+        if (!isServiceStarted(res.data)) {
+          throw {
+            ...res,
+            title: `Failed to start connector ${key.name}: Unable to confirm the status of the connector is running`,
+          };
+        }
       }),
     ),
   ).pipe(
-    map(([, data]) => data),
-    retryBackoff(RETRY_CONFIG),
-    catchError((error) =>
-      throwError({
-        data: error?.data,
-        meta: error?.meta,
-        title:
-          `Try to start connector: "${key.name}" failed after retry ${RETRY_CONFIG.maxRetries} times. ` +
-          `Expected state: ${State.RUNNING}, Actual state: ${error.data.state}`,
-      }),
-    ),
+    concatAll(),
+    last(),
+    map((res) => res.data),
+    retryBackoff({
+      ...RETRY_STRATEGY,
+      shouldRetry: (error) => {
+        if (error.status === 400) return false;
+        return true;
+      },
+    }),
   );
 }
 
 export function stopConnector(key: ObjectKey) {
-  return zip(
-    // attempt to stop at intervals
+  // try to stop until the connector really stops
+  return of(
     defer(() => connectorApi.stop(key)),
-    // wait until the service is not running
     defer(() => connectorApi.get(key)).pipe(
-      map((res: any) => {
-        if (!res?.data?.state) return res.data;
-        throw res;
+      tap((res: ConnectorResponse) => {
+        if (!isServiceStopped(res.data)) {
+          throw {
+            ...res,
+            title: `Failed to stop connector ${key.name}: Unable to confirm the status of the connector is not running`,
+          };
+        }
       }),
     ),
   ).pipe(
-    map(([, data]) => data),
-    retryBackoff(RETRY_CONFIG),
-    catchError((error) =>
-      throwError({
-        data: error?.data,
-        meta: error?.meta,
-        title:
-          `Try to stop connector: "${key.name}" failed after retry ${RETRY_CONFIG.maxRetries} times. ` +
-          `Expected state is nonexistent, Actual state: ${error.data.state}`,
-      }),
-    ),
+    concatAll(),
+    last(),
+    map((res) => res.data),
+    retryBackoff(RETRY_STRATEGY),
   );
 }
 
@@ -107,9 +107,7 @@ export function deleteConnector(key: ObjectKey) {
 }
 
 // Fetch and stop all connectors for this workspace
-export function fetchAndStopConnectors(
-  workspaceKey: ObjectKey,
-): Observable<ConnectorData[]> {
+export function fetchAndStopConnectors(workspaceKey: ObjectKey) {
   return fetchPipelines(workspaceKey).pipe(
     mergeMap((pipelines) => {
       if (isEmpty(pipelines)) return of([]);

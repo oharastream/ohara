@@ -112,10 +112,10 @@ export const useStartStreamAction = () => {
   const dispatch = useDispatch();
   const group = useStreamGroup();
   return useCallback(
-    (params, options) => {
-      const newParams = { ...params, group };
-      dispatch(actions.startStream.trigger({ params: newParams, options }));
-    },
+    (values, options) =>
+      dispatch(
+        actions.startStream.trigger({ values: { ...values, group }, options }),
+      ),
     [dispatch, group],
   );
 };
@@ -124,10 +124,10 @@ export const useStopStreamAction = () => {
   const dispatch = useDispatch();
   const group = useStreamGroup();
   return useCallback(
-    (params, options) => {
-      const newParams = { ...params, group };
-      dispatch(actions.stopStream.trigger({ params: newParams, options }));
-    },
+    (values, options) =>
+      dispatch(
+        actions.stopStream.trigger({ values: { ...values, group }, options }),
+      ),
     [dispatch, group],
   );
 };
@@ -235,20 +235,5 @@ export const useUpdateStreamLinkAction = () => {
       );
     },
     [dispatch, streamGroup, topicGroup],
-  );
-};
-
-export const useStopAndDeleteStreamAction = () => {
-  const dispatch = useDispatch();
-  const group = useStreamGroup();
-  return useCallback(
-    (params, options) =>
-      dispatch(
-        actions.stopAndDeleteStream.trigger({
-          params: { ...params, group },
-          options,
-        }),
-      ),
-    [dispatch, group],
   );
 };

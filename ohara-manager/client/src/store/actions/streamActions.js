@@ -27,4 +27,3 @@ export const stopStreams = createRoutine('STOP_STREAMS');
 export const removeStreamToLink = createRoutine('REMOVE_STREAM_TO_LINK');
 export const removeStreamFromLink = createRoutine('REMOVE_STREAM_FROM_LINK');
 export const updateStreamLink = createRoutine('UPDATE_STREAM_LINK');
-export const stopAndDeleteStream = createRoutine('STOP_AND_DELETE_STREAM');

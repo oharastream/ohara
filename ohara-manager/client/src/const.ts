@@ -108,9 +108,9 @@ export enum SETTINGS_COMPONENT_TYPE {
   CUSTOMIZED = 'CUSTOMIZED',
 }
 
-// retry every 2 seconds, up to 10 times
-export const RETRY_CONFIG = {
-  initialInterval: 2000, // 2 seconds
-  maxRetries: 10,
-  maxInterval: 2000, // 2 seconds interval between each retry
+// Retry strategy (using exponential function)
+// The retry time in 1s, 3s, 7s, 15s, 31s
+export const RETRY_STRATEGY = {
+  initialInterval: 1000,
+  maxRetries: 5,
 };

@@ -17,90 +17,50 @@
 import { merge } from 'lodash';
 import { normalize } from 'normalizr';
 import { ofType } from 'redux-observable';
-import { of, defer, iif, throwError, zip, from } from 'rxjs';
+import { of } from 'rxjs';
 import {
   catchError,
-  map,
-  startWith,
-  retryWhen,
-  delay,
-  concatMap,
   distinctUntilChanged,
+  map,
   mergeMap,
+  startWith,
+  tap,
 } from 'rxjs/operators';
 
-import * as connectorApi from 'api/connectorApi';
-import { SERVICE_STATE } from 'api/apiInterface/clusterInterface';
 import * as actions from 'store/actions';
 import * as schema from 'store/schema';
 import { getId } from 'utils/object';
+import { startConnector } from 'observables';
 import { CELL_STATUS, LOG_LEVEL } from 'const';
-
-/* eslint-disable no-unused-expressions */
-const startConnector$ = (values) => {
-  const { params, options = {} } = values;
-  const connectorId = getId(params);
-
-  const previousStatus =
-    options.paperApi?.getCell(params?.id)?.status || CELL_STATUS.stopped;
-
-  options.paperApi?.updateElement(params.id, {
-    status: CELL_STATUS.pending,
-  });
-
-  return zip(
-    defer(() => connectorApi.start(params)),
-    defer(() => connectorApi.get(params)).pipe(
-      map((res) => {
-        if (!res.data.state || res.data.state !== SERVICE_STATE.RUNNING)
-          throw res;
-
-        return res.data;
-      }),
-    ),
-  ).pipe(
-    retryWhen((errors) =>
-      errors.pipe(
-        concatMap((value, index) =>
-          iif(
-            () => index > 4,
-            throwError({
-              data: value?.data,
-              meta: value?.meta,
-              title:
-                `Try to start connector: "${params.name}" failed after retry ${index} times. ` +
-                `Expected state: ${SERVICE_STATE.RUNNING}, Actual state: ${value.data.state}`,
-            }),
-            of(value).pipe(delay(2000)),
-          ),
-        ),
-      ),
-    ),
-    map(([, data]) => normalize(data, schema.connector)),
-    map((normalizedData) => merge(normalizedData, { connectorId })),
-    map((normalizedData) => {
-      options.paperApi?.updateElement(params.id, {
-        status: CELL_STATUS.running,
-      });
-      return actions.startConnector.success(normalizedData);
-    }),
-    startWith(actions.startConnector.request({ connectorId })),
-    catchError((err) => {
-      options.paperApi?.updateElement(params.id, {
-        status: err?.data?.state?.toLowerCase() ?? previousStatus,
-      });
-      return from([
-        actions.startConnector.failure(merge(err, { connectorId })),
-        actions.createEventLog.trigger({ ...err, type: LOG_LEVEL.error }),
-      ]);
-    }),
-  );
-};
 
 export default (action$) =>
   action$.pipe(
     ofType(actions.startConnector.TRIGGER),
     map((action) => action.payload),
     distinctUntilChanged(),
-    mergeMap((values) => startConnector$(values)),
+    mergeMap(({ values, options = {} }) => {
+      const connectorId = getId(values);
+      const previousStatus =
+        options.paperApi?.getCell(values?.id)?.status || CELL_STATUS.stopped;
+      const updateStatus = (status) =>
+        options.paperApi?.updateElement(values.id, {
+          status,
+        });
+
+      updateStatus(CELL_STATUS.pending);
+      return startConnector(values).pipe(
+        tap(() => updateStatus(CELL_STATUS.running)),
+        map((data) => normalize(data, schema.connector)),
+        map((normalizedData) => merge(normalizedData, { connectorId })),
+        map((normalizedData) => actions.startConnector.success(normalizedData)),
+        startWith(actions.startConnector.request({ connectorId })),
+        catchError((err) => {
+          updateStatus(err?.data?.state?.toLowerCase() ?? previousStatus);
+          return of(
+            actions.startConnector.failure(merge(err, { connectorId })),
+            actions.createEventLog.trigger({ ...err, type: LOG_LEVEL.error }),
+          );
+        }),
+      );
+    }),
   );

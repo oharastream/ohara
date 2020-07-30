@@ -38,7 +38,7 @@ it('fetch streams should be worked correctly', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a----------|';
-    const expected = '--a 499ms (u|)';
+    const expected = '--a 99ms (u|)';
     const subs = '    ^------------!';
 
     const action$ = hot(input, {
@@ -74,7 +74,7 @@ it('fetch stream multiple times within period should be got latest result', () =
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a--b----------|';
-    const expected = '--a--b 499ms (u|)';
+    const expected = '--a--b 99ms (u|)';
     const subs = '    ^---------------!';
 
     const action$ = hot(input, {

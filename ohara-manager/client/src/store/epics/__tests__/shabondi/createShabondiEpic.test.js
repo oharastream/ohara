@@ -45,7 +45,7 @@ it('create shabondi should be worked correctly', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a         ';
-    const expected = '--a 1999ms u';
+    const expected = '--a 99ms u';
     const subs = '    ^-----------';
 
     const action$ = hot(input, {
@@ -91,7 +91,7 @@ it('create multiple shabondis should be worked correctly', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-ab          ';
-    const expected = '--ab 1998ms uv';
+    const expected = '--ab 98ms uv';
     const subs = '    ^-------------';
     const anotherShabondiEntity = {
       ...shabondiEntity,
@@ -166,7 +166,7 @@ it('create same shabondi within period should be created once only', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-aa 10s a    ';
-    const expected = '--a 1999ms u--';
+    const expected = '--a 99ms u--';
     const subs = '    ^-------------';
 
     const action$ = hot(input, {

@@ -219,13 +219,15 @@ export class API {
       message: '',
       stack: '',
     };
+
     if (isApiError(res.data.result)) {
       error = res.data.result;
     } else {
       error.message = res.data.result;
     }
+
     return {
-      status: -1,
+      status: res.status,
       data: { error },
       title,
     } as T;

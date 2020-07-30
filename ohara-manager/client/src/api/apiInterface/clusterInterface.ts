@@ -18,13 +18,9 @@ import { BasicResponse, ObjectKey, Metrics } from './basicInterface';
 
 export enum SERVICE_STATE {
   PENDING = 'PENDING',
-  CREATED = 'CREATED',
-  RESTARTING = 'RESTARTING',
   RUNNING = 'RUNNING',
-  REMOVING = 'REMOVING',
-  PAUSED = 'PAUSED',
-  EXITED = 'EXITED',
-  DEAD = 'DEAD',
+  FAILED = 'FAILED',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface ServiceBody extends ObjectKey {

@@ -16,6 +16,7 @@
 
 import { TestScheduler } from 'rxjs/testing';
 import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 import stopStreamEpic from '../../stream/stopStreamEpic';
 import * as streamApi from 'api/streamApi';
@@ -50,7 +51,7 @@ it('should stop the stream', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a        ';
-    const expected = '--a 499ms v';
+    const expected = '--a 199ms v';
     const subs = '    ^----------';
     const id = '1234';
 
@@ -58,7 +59,7 @@ it('should stop the stream', () => {
       a: {
         type: actions.stopStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id },
+          values: { ...streamEntity, id },
           options: { paperApi },
         },
       },
@@ -112,7 +113,7 @@ it('should fail after reaching the retry limit', () => {
         status: 200,
         title: 'retry mock get data',
         data: { ...streamEntity, state: SERVICE_STATE.RUNNING },
-      }),
+      }).pipe(delay(100)),
     );
   }
   // get result finally
@@ -121,15 +122,16 @@ it('should fail after reaching the retry limit', () => {
       status: 200,
       title: 'retry mock get data',
       data: { ...streamEntity },
-    }),
+    }).pipe(delay(100)),
   );
 
   makeTestScheduler().run((helpers) => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a            ';
-    // we failed after retry 5 times (5 * 2000ms = 10s)
-    const expected = '--a 9999ms (vz)';
+    // stop 1 time, get 6 times, retry 5 times
+    // => 100ms * 1 + 100ms * 6 + 31s = 31700ms
+    const expected = '--a 31699ms (vu)';
     const subs = '    ^--------------';
     const id = '1234';
 
@@ -137,7 +139,7 @@ it('should fail after reaching the retry limit', () => {
       a: {
         type: actions.stopStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id },
+          values: { ...streamEntity, id },
           options: { paperApi },
         },
       },
@@ -155,18 +157,24 @@ it('should fail after reaching the retry limit', () => {
         type: actions.stopStream.FAILURE,
         payload: {
           streamId,
-          data: { ...streamEntity, state: SERVICE_STATE.RUNNING },
-          meta: undefined,
-          title: `Try to stop stream: "${streamEntity.name}" failed after retry 5 times. Expected state is nonexistent, Actual state: RUNNING`,
+          data: {
+            ...streamEntity,
+            state: SERVICE_STATE.RUNNING,
+          },
+          status: 200,
+          title: `Failed to stop stream ${streamEntity.name}: Unable to confirm the status of the stream is not running`,
         },
       },
-      z: {
+      u: {
         type: actions.createEventLog.TRIGGER,
         payload: {
           streamId,
-          data: { ...streamEntity, state: SERVICE_STATE.RUNNING },
-          meta: undefined,
-          title: `Try to stop stream: "${streamEntity.name}" failed after retry 5 times. Expected state is nonexistent, Actual state: RUNNING`,
+          data: {
+            ...streamEntity,
+            state: SERVICE_STATE.RUNNING,
+          },
+          status: 200,
+          title: `Failed to stop stream ${streamEntity.name}: Unable to confirm the status of the stream is not running`,
           type: LOG_LEVEL.error,
         },
       },
@@ -191,7 +199,7 @@ it('stop stream multiple times should be worked once', () => {
     const { hot, expectObservable, expectSubscriptions, flush } = helpers;
 
     const input = '   ^-a---a 1s a 10s ';
-    const expected = '--a       499ms v';
+    const expected = '--a       199ms v';
     const subs = '    ^----------------';
     const id = '1234';
 
@@ -199,7 +207,7 @@ it('stop stream multiple times should be worked once', () => {
       a: {
         type: actions.stopStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id },
+          values: { ...streamEntity, id },
           options: { paperApi },
         },
       },
@@ -255,7 +263,7 @@ it('stop different stream should be worked correctly', () => {
       clientPort: 3333,
     };
     const input = '   ^-a--b           ';
-    const expected = '--a--b 496ms y--z';
+    const expected = '--a--b 196ms y--z';
     const subs = '    ^----------------';
     const id1 = '1234';
     const id2 = '5678';
@@ -264,14 +272,14 @@ it('stop different stream should be worked correctly', () => {
       a: {
         type: actions.stopStream.TRIGGER,
         payload: {
-          params: { ...streamEntity, id: id1 },
+          values: { ...streamEntity, id: id1 },
           options: { paperApi },
         },
       },
       b: {
         type: actions.stopStream.TRIGGER,
         payload: {
-          params: { ...anotherStreamEntity, id: id2 },
+          values: { ...anotherStreamEntity, id: id2 },
           options: { paperApi },
         },
       },

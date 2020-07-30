@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-import { Observable, defer, forkJoin, of, throwError, zip } from 'rxjs';
-import { catchError, map, mergeMap, mapTo } from 'rxjs/operators';
+/* eslint-disable no-throw-literal */
+import { Observable, defer, forkJoin, of } from 'rxjs';
+import { concatAll, last, map, mapTo, mergeMap, tap } from 'rxjs/operators';
 import { isEmpty, union, uniqWith } from 'lodash';
 import { retryBackoff } from 'backoff-rxjs';
 
 import { ObjectKey } from 'api/apiInterface/basicInterface';
-import { SERVICE_STATE, ClusterData } from 'api/apiInterface/clusterInterface';
+import {
+  ClusterData,
+  ClusterResponse,
+} from 'api/apiInterface/clusterInterface';
 import * as streamApi from 'api/streamApi';
-import { RETRY_CONFIG } from 'const';
+import { RETRY_STRATEGY } from 'const';
 import { fetchPipelines } from 'observables';
 import { getKey, isEqualByKey } from 'utils/object';
 import { hashByGroupAndName } from 'utils/sha';
-import { isServiceRunning } from './utils';
+import { isServiceStarted, isServiceStopped } from './utils';
 
 export function createStream(values: any): Observable<ClusterData> {
   return defer(() => streamApi.create(values)).pipe(map((res) => res.data));
@@ -45,57 +49,47 @@ export function fetchStreams(
   );
 }
 
-export function startStream(key: ObjectKey): Observable<ClusterData> {
-  return zip(
-    // attempt to start at intervals
+export function startStream(key: ObjectKey) {
+  // try to start until the stream starts successfully
+  return of(
     defer(() => streamApi.start(key)),
-    // wait until the service is running
     defer(() => streamApi.get(key)).pipe(
-      map((res) => {
-        if (!isServiceRunning(res)) throw res;
-        return res.data;
+      tap((res: ClusterResponse) => {
+        if (!isServiceStarted(res.data)) {
+          throw {
+            ...res,
+            title: `Failed to start stream ${key.name}: Unable to confirm the status of the stream is running`,
+          };
+        }
       }),
+      retryBackoff(RETRY_STRATEGY),
     ),
   ).pipe(
-    map(([, data]) => data),
-    // retry every 2 seconds, up to 10 times
-    retryBackoff(RETRY_CONFIG),
-    catchError((error) =>
-      throwError({
-        data: error?.data,
-        meta: error?.meta,
-        title:
-          `Try to start stream: "${key.name}" failed after retry ${RETRY_CONFIG.maxRetries} times. ` +
-          `Expected state: ${SERVICE_STATE.RUNNING}, Actual state: ${error.data.state}`,
-      }),
-    ),
+    concatAll(),
+    last(),
+    map((res) => res.data),
   );
 }
 
-export function stopStream(key: ObjectKey): Observable<ClusterData> {
-  return zip(
-    // attempt to stop at intervals
+export function stopStream(key: ObjectKey) {
+  // try to stop until the stream really stops
+  return of(
     defer(() => streamApi.stop(key)),
-    // wait until the service is not running
     defer(() => streamApi.get(key)).pipe(
-      map((res) => {
-        if (res.data?.state) throw res;
-        return res.data;
+      tap((res: ClusterResponse) => {
+        if (!isServiceStopped(res.data)) {
+          throw {
+            ...res,
+            title: `Failed to stop stream ${key.name}: Unable to confirm the status of the stream is not running`,
+          };
+        }
       }),
+      retryBackoff(RETRY_STRATEGY),
     ),
   ).pipe(
-    map(([, data]) => data),
-    // retry every 2 seconds, up to 10 times
-    retryBackoff(RETRY_CONFIG),
-    catchError((error) =>
-      throwError({
-        data: error?.data,
-        meta: error?.meta,
-        title:
-          `Try to stop stream: "${key.name}" failed after retry ${RETRY_CONFIG.maxRetries} times. ` +
-          `Expected state is nonexistent, Actual state: ${error.data.state}`,
-      }),
-    ),
+    concatAll(),
+    last(),
+    map((res) => res.data),
   );
 }
 
@@ -104,9 +98,7 @@ export function deleteStream(key: ObjectKey) {
 }
 
 // Fetch and stop all streams for this workspace
-export function fetchAndStopStreams(
-  workspaceKey: ObjectKey,
-): Observable<ClusterData[]> {
+export function fetchAndStopStreams(workspaceKey: ObjectKey) {
   return fetchPipelines(workspaceKey).pipe(
     mergeMap((pipelines) => {
       if (isEmpty(pipelines)) return of([]);
