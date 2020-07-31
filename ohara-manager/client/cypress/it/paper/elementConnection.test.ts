@@ -171,10 +171,6 @@ describe('Paper Element connections', () => {
       cy.get('#paper .paper-element').should('have.length', 3);
       cy.get('#paper .joint-link').should('have.length', 2);
 
-      // Start pipeline
-      cy.startPipeline('pipeline1');
-      cy.get('#paper .paper-element .running').should('have.length', 3);
-
       // we can delete a connected topic and remove the links
       cy.removeElement(pipelineOnlyTopicName);
 

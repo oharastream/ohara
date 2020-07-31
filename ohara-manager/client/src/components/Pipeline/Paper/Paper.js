@@ -581,7 +581,7 @@ const Paper = React.forwardRef((props, ref) => {
                 elementView.enableMenu();
               } else {
                 elementView.disableMenu(['link', 'start', 'config', 'remove']);
-                elementView.toggleMetrics(true);
+                isMetricsOn && elementView.toggleMetrics(true);
               }
               break;
             case CELL_STATUS.failed:

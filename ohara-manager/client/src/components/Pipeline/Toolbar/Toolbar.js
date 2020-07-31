@@ -41,8 +41,8 @@ import { Tooltip } from 'components/common/Tooltip';
 import { DeleteDialog } from 'components/common/Dialog';
 import {
   useZoom,
-  useRunningServices,
-  useRenderDeleteContent,
+  useRunningElements,
+  useRenderDeleteDialogContent,
   useMakeRequest,
 } from './ToolbarHooks';
 
@@ -70,8 +70,8 @@ const Toolbar = (props) => {
   const stopUpdateMetrics = hooks.useStopUpdateMetricsAction();
 
   const paperApi = React.useContext(pipelineContext.PaperContext);
-  const runningServices = useRunningServices();
-  const deleteDialogContent = useRenderDeleteContent();
+  const runningElements = useRunningElements();
+  const deleteDialogContent = useRenderDeleteDialogContent();
   const makeRequest = useMakeRequest();
   const { setZoom, scale, setScale } = useZoom();
 
@@ -336,7 +336,7 @@ const Toolbar = (props) => {
       )}
 
       <DeleteDialog
-        confirmDisabled={runningServices.length > 0}
+        confirmDisabled={runningElements.length > 0}
         confirmText={pipelineError ? 'RETRY' : 'DELETE'}
         content={deleteDialogContent}
         isWorking={isDeleting}

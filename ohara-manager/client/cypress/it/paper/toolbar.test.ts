@@ -654,7 +654,7 @@ describe('Toolbar', () => {
       cy.get('@switch').click().should('not.have.class', 'Mui-checked');
     });
 
-    context('Displaying metrics when', () => {
+    context('Paper interaction', () => {
       let sourceName = '';
 
       beforeEach(() => {
@@ -678,7 +678,27 @@ describe('Toolbar', () => {
         cy.createConnections([sourceName, topicName]);
       });
 
-      it(`starts a connection with Paper element's start action button`, () => {
+      it('toggles paper element metrics', () => {
+        cy.startPipeline('pipeline1');
+
+        // Should not display metrics on Paper elements
+        cy.get('#paper .metrics')
+          .should('have.length', 1)
+          .and('not.be.visible');
+
+        // Turn on switch
+        cy.findByTestId('metrics-switch')
+          .should('not.have.class', 'Mui-checked')
+          .click();
+
+        // Should display metrics on Paper elements
+        cy.get('#paper .metrics').should('have.length', 1).and('be.visible');
+
+        // Reset metrics
+        cy.findByTestId('metrics-switch').click();
+      });
+
+      it(`should display metrics when starts a connection with Paper element's start action button`, () => {
         // Start the source with element's start action button
         cy.getCell(sourceName).trigger('mouseover');
         cy.cellAction(sourceName, CELL_ACTION.start).click();
@@ -703,7 +723,7 @@ describe('Toolbar', () => {
           .should('not.have.class', 'Mui-checked');
       });
 
-      it('starts a connection with start all components action', () => {
+      it('should display metrics when starts a connection with start all components action', () => {
         // Start the pipeline with start all components action
         cy.startPipeline('pipeline1');
 

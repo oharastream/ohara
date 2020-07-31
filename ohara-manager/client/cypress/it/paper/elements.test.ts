@@ -156,6 +156,47 @@ describe('Elements', () => {
       // Should be gone after the deletion
       cy.get('#paper').findByText(sourceName).should('not.exist');
     });
+
+    it('should prevent a topic from deleting if it links to running elements', () => {
+      // Create and start the pipeline
+      const { topicName, sourceName } = createSourceAndTopic();
+      cy.startPipeline('pipeline1');
+
+      // Try to remove the element
+      cy.getCell(topicName).trigger('mouseover');
+      cy.cellAction(topicName, CELL_ACTION.remove).click();
+
+      cy.findByTestId('delete-dialog').within(() => {
+        // We should display a message to tell users why they cannot do so
+        cy.findByText(
+          `Before deleting this topic, you must stop the pipeline components link to it: ${sourceName}`,
+        ).should('exist');
+
+        // As well as disabling the delete button
+        cy.findByText('DELETE')
+          .should('exist')
+          .parent('button')
+          .should('be.disabled')
+          .and('have.class', 'Mui-disabled');
+
+        cy.findByText('CANCEL').click();
+      });
+
+      // Stop the pipeline, and now we should able to delete it!
+      cy.stopPipeline('pipeline1');
+
+      cy.getCell(topicName).trigger('mouseover');
+      cy.cellAction(topicName, CELL_ACTION.remove).click();
+
+      cy.findByTestId('delete-dialog').findByText('DELETE').click();
+
+      // Topic should be removed by now, but the source connector should remain in Paper
+      cy.get('#paper').within(() => {
+        cy.findByText(topicName).should('not.exist');
+        cy.get('.joint-link').should('have.length', 0);
+        cy.findByText(sourceName).should('exist');
+      });
+    });
   });
 
   // Testing different states of the Paper elements:

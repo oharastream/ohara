@@ -29,8 +29,10 @@ import { usePrevious } from 'utils/hooks';
 import { PaperWrapper, StyledSplitPane } from './PipelineStyles';
 import { usePipelineState as usePipelineReducerState } from './PipelineHooks';
 import { CONNECTION_TYPE } from './PipelineApiHelper';
-import { KIND } from 'const';
+import { KIND, CELL_STATUS } from 'const';
 import { DeleteDialog } from 'components/common/Dialog';
+
+/* eslint-disable no-unused-expressions */
 
 export const PaperContext = createContext(null);
 export const PipelineStateContext = createContext(null);
@@ -85,15 +87,26 @@ const Pipeline = React.forwardRef((props, ref) => {
   } = pipelineUtils.topic();
 
   const { updateCells, getUpdatedCells } = pipelineUtils.pipeline();
-
   const isInitialized = React.useRef(false);
-  const forceDeleteList = React.useRef({});
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [currentCellData, setCurrentCellData] = React.useState(null);
+  const paperApiRef = useRef(null);
+  const forceDeleteList = React.useRef({
+    connectors: [],
+    fromStreams: [],
+    toStreams: [],
+  });
+
+  const resetDeleteList = () =>
+    (forceDeleteList.current = {
+      connectors: [],
+      fromStreams: [],
+      toStreams: [],
+    });
 
   const handleDialogClose = () => {
-    setIsOpen(false);
-    forceDeleteList.current = {};
+    setIsDeleteDialogOpen(false);
+    resetDeleteList();
   };
 
   const clean = (cells, paperApi, onlyRemoveLink = false) => {
@@ -121,8 +134,6 @@ const Pipeline = React.forwardRef((props, ref) => {
       }
     });
   };
-
-  const paperApiRef = useRef(null);
 
   const prevWorkspace = usePrevious(currentWorkspace);
   const prevPipeline = usePrevious(currentPipeline);
@@ -204,38 +215,16 @@ const Pipeline = React.forwardRef((props, ref) => {
     }
   };
 
-  const deleteTopic = () => {
-    const paperApi = paperApiRef.current;
-
-    const {
-      connectors,
-      toStreams,
-      fromStreams,
-      topic,
-    } = forceDeleteList.current;
-
-    connectors
-      .filter((connector) => _.get(connector, 'state', null) === 'RUNNING')
-      .map((connector) => {
-        const connectorCell = paperApi.getCell(connector.name);
-        return stopConnector(connectorCell, paperApi);
-      });
-
-    [...toStreams, ...fromStreams]
-      .filter((stream) => _.get(stream, 'state', null) === 'RUNNING')
-      .map((stream) => {
-        const streamCell = paperApi.getCell(stream.name);
-        return stopStream(streamCell, paperApi);
-      });
-
+  // Deleting a topic involves some different logic from deleting a connector
+  // We need to ensure it doesn't have any links that link to a running element as we need to update
+  // the connected element's topicKeys and this update is only allowed when an element is not in running/failed state
+  const deleteTopic = (forceDeleteList, resetDeleteList, paperApi) => {
+    const { connectors, toStreams, fromStreams, topic } = forceDeleteList;
+    // Remove all links from the target topic
     connectors.forEach((connector) => {
       const connectorCell = paperApi.getCell(connector.name);
-      const kind = _.get(connectorCell, 'kind');
-      // The connectors may be removed by user from UI but not removed from forceDeleteList
-      // we should skip those cells which had been removed already
-      if (kind) {
-        clean({ [kind]: connectorCell, paperApi });
-      }
+      const kind = connectorCell?.kind;
+      if (kind) clean({ [kind]: connectorCell, paperApi });
     });
 
     toStreams.forEach((stream) => {
@@ -249,6 +238,9 @@ const Pipeline = React.forwardRef((props, ref) => {
     });
 
     stopAndRemoveTopic(topic, paperApi);
+
+    // Reset the list
+    resetDeleteList();
   };
 
   const handleCellSelect = (element) => {
@@ -266,15 +258,14 @@ const Pipeline = React.forwardRef((props, ref) => {
     const { kind } = currentCellData;
 
     if (kind === KIND.topic) {
-      deleteTopic();
-      forceDeleteList.current = {};
+      deleteTopic(forceDeleteList.current, resetDeleteList, paperApi);
     } else if (kind === KIND.source || kind === KIND.sink) {
       removeConnector(currentCellData, paperApi);
     } else if (kind === KIND.stream) {
       removeStream(currentCellData, paperApi);
     }
 
-    setIsOpen(false);
+    setIsDeleteDialogOpen(false);
   };
 
   const getCurrentCellName = (cellData) => {
@@ -513,8 +504,34 @@ const Pipeline = React.forwardRef((props, ref) => {
       };
     }
 
-    setIsOpen(true);
+    setIsDeleteDialogOpen(true);
     setCurrentCellData(cellData);
+  };
+
+  const getRunningElements = () => {
+    const { connectors, toStreams, fromStreams } = forceDeleteList.current;
+    return connectors
+      .concat(toStreams, fromStreams)
+      .filter(
+        (element) => element?.state?.toLowerCase() === CELL_STATUS.running,
+      );
+  };
+
+  const renderDeleteDialogContent = ({
+    getCurrentCellName,
+    currentCellData,
+    getRunningElements,
+  }) => {
+    const runningElements = getRunningElements();
+    if (runningElements.length > 0) {
+      return `Before deleting this topic, you must stop the pipeline components link to it: ${runningElements
+        .map((element) => element?.name)
+        .join(', ')}`;
+    }
+
+    return `Are you sure you want to delete the element: ${getCurrentCellName(
+      currentCellData,
+    )} ? This action cannot be undone!`;
   };
 
   // Public APIs
@@ -610,13 +627,16 @@ const Pipeline = React.forwardRef((props, ref) => {
               />
 
               <DeleteDialog
-                content={`Are you sure you want to delete the element: ${getCurrentCellName(
+                confirmDisabled={getRunningElements().length > 0}
+                content={renderDeleteDialogContent({
+                  getCurrentCellName,
                   currentCellData,
-                )} ? This action cannot be undone!`}
+                  getRunningElements,
+                })}
                 maxWidth="xs"
                 onClose={handleDialogClose}
                 onConfirm={handleElementDelete}
-                open={isOpen}
+                open={isDeleteDialogOpen}
                 title="Delete the element"
               />
             </>

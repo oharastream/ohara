@@ -22,7 +22,7 @@ import { PaperContext } from '../Pipeline';
 import { KIND, CELL_STATUS, CELL_TYPE } from 'const';
 import { usePrevious } from 'utils/hooks';
 
-export const useRunningServices = () => {
+export const useRunningElements = () => {
   const paperApi = React.useContext(PaperContext);
   return paperApi
     .getCells()
@@ -31,16 +31,16 @@ export const useRunningServices = () => {
     .filter((cell) => cell.status?.toLowerCase() !== CELL_STATUS.stopped);
 };
 
-export const useRenderDeleteContent = () => {
+export const useRenderDeleteDialogContent = () => {
   const pipelineError = hooks.usePipelineError();
   const currentPipelineName = hooks.usePipelineName();
-  const hasRunningServices = useRunningServices().length > 0;
+  const hasRunningElements = useRunningElements().length > 0;
 
   if (pipelineError) {
     return `Failed to delete services! You can try to delete again by hitting on the RETRY button`;
   }
 
-  if (hasRunningServices) {
+  if (hasRunningElements) {
     return `Oops, there are still some running services in ${currentPipelineName}. You should stop them first and then you will be able to delete this pipeline.`;
   }
 
