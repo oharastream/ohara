@@ -525,7 +525,8 @@ describe('Restart workspace', () => {
     cy.findByText('CLOSE').parent('button').should('be.enabled').click();
   });
 
-  it('should able to restart broker by directly click button', () => {
+  // Waiting for support volume
+  it.skip('should be able to restart broker by directly click button', () => {
     cy.switchSettingSection(SETTING_SECTION.dangerZone, 'Restart this broker');
     cy.findAllByRole('dialog')
       .filter(':visible')

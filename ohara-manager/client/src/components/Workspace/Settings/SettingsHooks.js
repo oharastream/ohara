@@ -74,7 +74,7 @@ export const useConfig = ({
   restartConfirmMessage,
   restartWorkspace,
   targetIsWorker,
-  targetIsBroker,
+  //targetIsBroker,
   targetIsWorkspace,
   workspace,
 }) => {
@@ -303,23 +303,24 @@ export const useConfig = ({
             testId: 'restart-worker-confirm-dialog',
           },
         },
-        {
-          icon: <PowerSettingsNewIcon />,
-          title: 'Restart this broker',
-          type: SETTINGS_COMPONENT_TYPE.DIALOG,
-          componentProps: {
-            children: restartConfirmMessage(KIND.broker),
-            title: 'Are you absolutely sure?',
-            confirmText: 'RESTART',
-            onConfirm: () => {
-              targetIsBroker();
-              restartWorkspace();
-            },
-            maxWidth: 'sm',
-            confirmDisabled: hasRunningServices,
-            testId: 'restart-broker-confirm-dialog',
-          },
-        },
+        // Waiting for support volume
+        // {
+        //   icon: <PowerSettingsNewIcon />,
+        //   title: 'Restart this broker',
+        //   type: SETTINGS_COMPONENT_TYPE.DIALOG,
+        //   componentProps: {
+        //     children: restartConfirmMessage(KIND.broker),
+        //     title: 'Are you absolutely sure?',
+        //     confirmText: 'RESTART',
+        //     onConfirm: () => {
+        //       targetIsBroker();
+        //       restartWorkspace();
+        //     },
+        //     maxWidth: 'sm',
+        //     confirmDisabled: hasRunningServices,
+        //     testId: 'restart-broker-confirm-dialog',
+        //   },
+        // },
         {
           icon: <PowerSettingsNewIcon />,
           title: 'Restart this workspace',

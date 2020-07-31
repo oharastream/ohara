@@ -33,7 +33,7 @@ const SettingsMain = ({
   selectedComponent,
   handleClose,
   restartWorkspace,
-  targetIsBroker,
+  // targetIsBroker,
   targetIsWorker,
   targetIsWorkspace,
 }) => {
@@ -68,8 +68,9 @@ const SettingsMain = ({
   const handleOnRestart = () => {
     if (kind === KIND.worker) {
       targetIsWorker();
-    } else if (kind === KIND.broker) {
-      targetIsBroker();
+      // Waiting for support volume
+      //  } else if (kind === KIND.broker) {
+      //     targetIsBroker();
     } else {
       targetIsWorkspace();
     }
@@ -140,7 +141,7 @@ SettingsMain.propTypes = {
     type: PropTypes.string,
   }),
   restartWorkspace: PropTypes.func.isRequired,
-  targetIsBroker: PropTypes.func.isRequired,
+  // targetIsBroker: PropTypes.func.isRequired,
   targetIsWorker: PropTypes.func.isRequired,
   targetIsWorkspace: PropTypes.func.isRequired,
 };
