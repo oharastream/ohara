@@ -27,7 +27,7 @@ import oharastream.ohara.common.annotations.Optional
 import oharastream.ohara.common.exception.NoSuchFileException
 import oharastream.ohara.common.util.{CommonUtils, Releasable}
 import oharastream.ohara.kafka.connector.storage.FileType
-import org.apache.commons.net.ftp.{FTP, FTPClient}
+import org.apache.commons.net.ftp.{FTP, FTPClient, FTPReply}
 
 import scala.concurrent.duration.Duration
 
@@ -346,11 +346,16 @@ object FtpClient {
 
           override def available(): Int = inputStream.available()
 
-          override def close(): Unit = {
-            inputStream.close()
-            if (client == null || !client.completePendingCommand())
-              throw new IllegalStateException("Failed to complete pending command")
-          }
+          override def close(): Unit =
+            try inputStream.close()
+            finally if (client != null) {
+              val reply = client.getReply
+              // 426 reply means the data connection is unexpectedly closed before the completion of a data transfer
+              // this is a false error as closing a input stream before eof can cause this error.
+              // our ftp connector has a limit of read buffer so the input stream get closed early.
+              if (reply != 426 && !FTPReply.isPositiveCompletion(reply))
+                throw new IllegalStateException("Failed to complete pending command")
+            }
 
           override def mark(readlimit: Int): Unit = inputStream.mark(readlimit)
 
