@@ -22,49 +22,49 @@ version: '3'
 
 services:
   configurator:
-    image: oharastream/configurator:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/configurator:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: configurator.dockerfile
 
   manager:
-    image: oharastream/manager:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/manager:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: manager.dockerfile
 
   stream:
-    image: oharastream/stream:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/stream:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: stream.dockerfile
 
   shabondi:
-    image: oharastream/shabondi:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/shabondi:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: shabondi.dockerfile
 
   backend:
-    image: oharastream/backend:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/backend:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: backend.dockerfile
 
   zookeeper:
-    image: oharastream/zookeeper:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/zookeeper:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: zookeeper.dockerfile
 
   broker:
-    image: oharastream/broker:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/broker:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: broker.dockerfile
 
   worker:
-    image: oharastream/connect-worker:${TAG:-0.11.1-SNAPSHOT}
+    image: oharastream/connect-worker:${TAG:-0.11.1}
     build:
       context: .
       dockerfile: worker.dockerfile
