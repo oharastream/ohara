@@ -108,7 +108,7 @@ object ShabondiDefinitions {
     .orderInGroup(orderInGroup())
     .optional(Type.STRING)
     .displayName("Endpoint")
-    .documentation("the endpoint of this Shabondi service")
+    .documentation("The endpoint of this Shabondi service. After the service is started, the endpoint will be shown.")
     .permission(SettingDef.Permission.READ_ONLY)
     .build
     .registerTo(basicDefinitionMap)
