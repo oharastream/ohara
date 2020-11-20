@@ -20,7 +20,7 @@ ext {
 }
 def defaultScalaMinor = '2.13'
 def defaultScalaVersion = '2.13.3'
-versions["hadoop"] = project.hasProperty('hadoop.version') ? project.properties['hadoop.version'] : "2.7.0"
+versions["hadoop"] = project.hasProperty('hadoop.version') ? project.properties['hadoop.version'] : "2.10.1"
 versions["kafka"] = project.hasProperty('kafka.version') ? project.properties['kafka.version'] : "2.6.0"
 versions["postgresql"] = project.hasProperty('postgresql.version') ? project.properties['postgresql.version'] : "9.1-901-1.jdbc4"
 versions["mockito"] = project.hasProperty('mockito.version') ? project.properties['mockito.version'] : "1.10.19"

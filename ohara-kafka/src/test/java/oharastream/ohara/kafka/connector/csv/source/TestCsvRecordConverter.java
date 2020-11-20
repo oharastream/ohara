@@ -40,7 +40,6 @@ import oharastream.ohara.common.rule.OharaTest;
 import oharastream.ohara.common.setting.TopicKey;
 import oharastream.ohara.kafka.connector.RowSourceContext;
 import oharastream.ohara.kafka.connector.RowSourceRecord;
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,10 +94,10 @@ public class TestCsvRecordConverter extends OharaTest {
     String lineSeparator = System.getProperty("line.separator");
 
     try (FileWriter writer = new FileWriter(tempFile)) {
-      writer.write(StringUtils.join(header, ",") + lineSeparator);
-      writer.write(StringUtils.join(line1, ",") + lineSeparator);
-      writer.write(StringUtils.join(line2, ",") + lineSeparator);
-      writer.write(StringUtils.join(line3, ",") + lineSeparator);
+      writer.write(String.join(",", header) + lineSeparator);
+      writer.write(String.join(",", line1) + lineSeparator);
+      writer.write(String.join(",", line2) + lineSeparator);
+      writer.write(String.join(",", line3) + lineSeparator);
     } catch (IOException e) {
       e.printStackTrace();
     }
