@@ -71,6 +71,11 @@ class TestCollie extends IntegrationTest {
   def testMultiNodeVolume(platform: ContainerPlatform): Unit =
     close(platform.setup())(resourceRef => testMultiNodeVolume(resourceRef))(_ => ())
 
+  @ParameterizedTest(name = "{displayName} with {argumentsWithNames}")
+  @MethodSource(value = Array("parameters"))
+  def testSameNodeDifferentVolume(platform: ContainerPlatform): Unit =
+    close(platform.setup())(resourceRef => testSameNodeDifferentVolume(resourceRef))(_ => ())
+
   /**
     * @param clusterCount how many cluster should be created at same time
     */
@@ -121,6 +126,38 @@ class TestCollie extends IntegrationTest {
       result(resourceRef.volumeApi.stop(volume.key))   // Delete docker or k8s volume and folder data
       result(resourceRef.volumeApi.delete(volume.key)) // Delete api data for the ohara volume
       checkVolumeNotExists(resourceRef, Seq(name))
+    }
+  }
+
+  private[this] def testSameNodeDifferentVolume(resourceRef: ResourceRef): Unit = {
+    val path  = s"/tmp/${CommonUtils.randomString(10)}"
+    val names = Seq(s"volume1${CommonUtils.randomString(5)}", s"volume2${CommonUtils.randomString(5)}")
+    checkVolumeNotExists(resourceRef, names)
+    val volumes = names.map { name =>
+      result(
+        resourceRef.volumeApi.request
+          .key(resourceRef.generateObjectKey)
+          .name(name)
+          .nodeNames(Set(resourceRef.nodeNames.head))
+          .path(path)
+          .create()
+      )
+    }
+    try {
+      volumes.foreach { volume =>
+        result(resourceRef.volumeApi.start(volume.key))
+      }
+      result(resourceRef.volumeApi.list()).foreach { volume =>
+        names.contains(volume.name) shouldBe true
+        volume.path shouldBe path
+      }
+      result(resourceRef.volumeApi.list()).size shouldBe names.size
+    } finally {
+      volumes.foreach { volume =>
+        result(resourceRef.volumeApi.stop(volume.key))
+        result(resourceRef.volumeApi.delete(volume.key))
+      }
+      checkVolumeNotExists(resourceRef, names)
     }
   }
 

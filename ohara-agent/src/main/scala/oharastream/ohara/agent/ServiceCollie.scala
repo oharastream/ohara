@@ -206,6 +206,7 @@ abstract class ServiceCollie extends Releasable {
   ): Future[Unit] = {
     containerClient
       .volumes()
+      .map(volumes => volumes.filter(volume => prefixNameEqualsKey(volume.name, key.toPlain)))
       .flatMap { cvs =>
         Future
           .traverse(nodeNames.diff(cvs.map(_.nodeName).toSet))(
@@ -279,7 +280,7 @@ abstract class ServiceCollie extends Releasable {
         _.filter { volume =>
           ObjectKey.ofPlain(volume.name).asScala match {
             case None            => false
-            case Some(volumeKey) => volumeKey.name().startsWith(key.name())
+            case Some(volumeKey) => prefixNameEqualsKey(volumeKey.name(), key.name())
           }
         }
       )
@@ -293,6 +294,7 @@ abstract class ServiceCollie extends Releasable {
     val splits = name.split("-")
     s"${splits(0)}-${splits(1)}" // The name variable value is ${group}-${name}-${hash} convert to ${group}-${name}
   }
+  private[this] def prefixNameEqualsKey(name: String, key: String): Boolean = name.startsWith(key)
 }
 
 object ServiceCollie {
