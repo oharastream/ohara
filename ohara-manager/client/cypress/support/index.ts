@@ -31,8 +31,9 @@ after(async () => {
     // which will print out to our browsers console
     // to indicate which objects are deleted
     Cypress.log({
-      name: 'All services were deleted',
-      message: [],
+      name: 'deleteAllServices',
+      displayName: `Command`,
+      message: 'All services were deleted',
       consoleProps: () =>
         _(res)
           .mapKeys((_value, key) => `Deleted ${key.replace('res', 's')}`)

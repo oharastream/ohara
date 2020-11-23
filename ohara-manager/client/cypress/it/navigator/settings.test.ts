@@ -432,6 +432,8 @@ describe('Navigator', () => {
       cy.switchSettingSection(SettingSection.broker);
 
       cy.findAllByTitle('View node').filter(':visible').click();
+      // Ensure table data are fully loaded and ready to be tested
+      cy.findByText('No records to display').should('not.exist');
 
       cy.findVisibleDialog().within(() => {
         cy.get('table')
@@ -485,6 +487,9 @@ describe('Navigator', () => {
       cy.findAllByTitle('View node').filter(':visible').click();
 
       cy.findVisibleDialog().within(() => {
+        // Ensure table data are fully loaded and ready to be tested
+        cy.findByText('No records to display').should('not.exist');
+
         cy.get('table')
           .first()
           .within(($table) => {
@@ -516,6 +521,8 @@ describe('Navigator', () => {
             cy.getTableCellByColumn($table, 'Type', 'worker').should('exist');
           });
       });
+
+      cy.closeDialog();
     });
   });
 

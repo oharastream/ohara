@@ -184,7 +184,7 @@ Cypress.Commands.add(
 
     // Wait until page is loaded
     cy.wait(2000);
-    cy.closeIntroDialog();
+    cy.closeDialog();
 
     cy.findByTitle('Create a new workspace').click();
     cy.findByText('QUICK CREATE').should('exist').click();
@@ -392,14 +392,26 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add('closeIntroDialog', () => {
-  // if the intro dialog appears, we should close it
-  cy.get('body').then(($body) => {
-    if ($body.find('[data-testid="intro-dialog"]').length > 0) {
-      cy.findByTestId('close-intro-button').filter(':visible').click();
+Cypress.Commands.add('closeDialog', () => {
+  cy.get('body', { log: false }).then(($body) => {
+    const $dialogs = $body.find('[role="dialog"]');
+
+    if ($dialogs.filter(':visible').length > 0) {
+      // Using keyboard instead of a mouse click to avoid Cypress' detached DOM issue
+      cy.get('body').type('{esc}');
+
+      Cypress.log({
+        name: 'closeDialog',
+        displayName: `Command`,
+        message: `An active dialog were closed`,
+        consoleProps: () => ({ dialog: $dialogs.filter(':visible') }),
+      });
     }
   });
-  return cy.end();
+});
+
+Cypress.Commands.add('closeSnackbar', () => {
+  cy.findByTestId('snackbar').find('button:visible').click();
 });
 
 Cypress.Commands.add('findVisibleDialog', () => {

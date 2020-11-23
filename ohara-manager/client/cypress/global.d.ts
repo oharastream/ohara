@@ -58,11 +58,6 @@ declare namespace Cypress {
       options?: CreateWorkspaceByApiOption,
     ) => Chainable<null>;
 
-    produceTopicData: (
-      workspaceName?: string,
-      topicName?: string,
-    ) => Chainable<void>;
-
     /**
      * Delete all services. This command uses `deleteAllServices` under the hook
      * @example cy.deleteServicesByApi();
@@ -141,6 +136,7 @@ declare namespace Cypress {
     stopPipeline: (name: string) => Chainable<null>;
     deletePipeline: (name: string) => Chainable<null>;
     stopAndDeleteAllPipelines: () => Chainable<null>;
+
     // Settings
     switchSettingSection: (
       section: SettingSection,
@@ -155,5 +151,17 @@ declare namespace Cypress {
      * @example cy.findVisibleDialog().within(() => cy.findByText('Delete').click());
      */
     findVisibleDialog: () => Chainable<HTMLElement>;
+
+    /**
+     * Close active dialog
+     * @example cy.closeDialog();
+     */
+    closeDialog: () => Chainable<null>;
+
+    /**
+     * Close active snackbar
+     * @example cy.closeSnackbar()
+     */
+    closeSnackbar: () => Chainable<null>;
   }
 }

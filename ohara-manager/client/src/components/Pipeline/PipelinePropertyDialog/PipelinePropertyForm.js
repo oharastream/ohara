@@ -20,8 +20,9 @@ import {
   useRef,
   Fragment,
   createRef,
+  memo,
 } from 'react';
-import { capitalize, flatten } from 'lodash';
+import { capitalize, flatten, isEqual, omitBy, isFunction } from 'lodash';
 import PropTypes from 'prop-types';
 import { Form } from 'react-final-form';
 import Typography from '@material-ui/core/Typography';
@@ -105,4 +106,10 @@ PipelinePropertyForm.propTypes = {
   topics: PropTypes.array,
 };
 
-export default PipelinePropertyForm;
+const areEqual = (prevProps, nextProps) => {
+  // The onSubmit handler passing down form the parent component will always be different
+  // from previous render, hance omitting from our comparison function
+  return isEqual(omitBy(prevProps, isFunction), omitBy(nextProps, isFunction));
+};
+
+export default memo(PipelinePropertyForm, areEqual);

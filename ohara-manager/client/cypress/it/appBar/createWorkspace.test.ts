@@ -166,7 +166,7 @@ describe('Create Workspace', () => {
       // Wait until the page is loaded
       cy.wait(1000);
 
-      cy.closeIntroDialog();
+      cy.closeDialog();
 
       // Create a new workspace
       cy.findByTitle('Create a new workspace').click();
@@ -206,7 +206,7 @@ describe('Create Workspace', () => {
 
   context('Volume', () => {
     // FIXME: This test is currently failing due to Backend API issue
-    // Re-enable this after Backend issue is resolved
+    // Re-enable this after Backend issue is resolved. See #5798
     it.skip('should able to add a volume', () => {
       const workspaceName = generate.serviceName({ prefix: 'ws' });
       const volumePath = '/home/ohara/workspace1';
@@ -215,7 +215,7 @@ describe('Create Workspace', () => {
       // Wait until the page is loaded
       cy.wait(1000);
 
-      cy.closeIntroDialog();
+      cy.closeDialog();
 
       // Create a new workspace
       cy.findByTitle('Create a new workspace').click();
@@ -290,7 +290,7 @@ describe('Create Workspace', () => {
       // when the cancellation is completed, the CLOSE button should allow clicking
       cy.findByText('CLOSE').click();
 
-      cy.closeIntroDialog();
+      cy.closeDialog();
 
       // the workspace just canceled should not exist
       cy.reload();
@@ -319,8 +319,9 @@ describe('Create Workspace', () => {
         workspaceName,
         node,
       });
+      cy.closeSnackbar();
+      cy.closeDialog();
 
-      cy.closeIntroDialog();
       cy.findByTitle('Event logs').click();
       cy.findByTestId('event-log-list').within(() => {
         cy.findAllByText(
@@ -353,7 +354,7 @@ describe('Create Workspace', () => {
         node,
       });
 
-      cy.closeIntroDialog();
+      cy.closeDialog();
 
       // should highlight the unstable workspaces
       cy.get('#app-bar')
@@ -379,10 +380,8 @@ describe('Create Workspace', () => {
       });
 
       cy.createWorkspace({ workspaceName });
-
-      // Close the intro dialog and get back to home route, this also fix Cypress
-      // sometimes fail to assert snackbar message issue
-      cy.visit('/');
+      cy.closeSnackbar();
+      cy.closeDialog();
 
       // clicking the button of unstable workspace should show a snackbar
       cy.get('#app-bar')

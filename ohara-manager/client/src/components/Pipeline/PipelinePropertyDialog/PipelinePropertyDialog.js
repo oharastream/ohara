@@ -285,7 +285,7 @@ const PipelinePropertyDialog = (props) => {
           />
         </Content>
         <div className="speed-dial">
-          <PipelinePropertySpeedDial formRef={formRef} />
+          <PipelinePropertySpeedDial formRef={formRef} testId="autofill-dial" />
         </div>
       </StyleMuiDialogContent>
       <StyleMuiDialogActions>
