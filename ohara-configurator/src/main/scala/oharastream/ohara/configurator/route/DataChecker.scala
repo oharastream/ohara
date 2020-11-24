@@ -85,6 +85,7 @@ object DataChecker {
                     if definition.valueType() == SettingDef.Type.OBJECT_KEY || definition
                       .valueType() == SettingDef.Type.OBJECT_KEYS =>
                   add(obj, definition)
+                case _ => // nothing
               }
             }
         )

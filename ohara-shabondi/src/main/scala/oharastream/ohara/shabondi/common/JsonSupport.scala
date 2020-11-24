@@ -94,10 +94,12 @@ object JsonSupport {
   }
 
   private[this] def toValue(value: JsValue): Any = value match {
-    case JsNull       => throw new IllegalArgumentException("null should be eliminated")
-    case JsBoolean(b) => b
-    case JsNumber(i)  => i
-    case JsString(s)  => s
+    case JsNull  => throw new IllegalArgumentException("null should be eliminated")
+    case JsFalse => false
+    case JsTrue  => true
+//    case JsBoolean(b) => b
+    case JsNumber(i) => i
+    case JsString(s) => s
     case JsArray(es) =>
       es.filter {
           case JsNull => false

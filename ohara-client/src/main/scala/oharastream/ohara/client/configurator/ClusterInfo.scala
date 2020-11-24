@@ -99,6 +99,7 @@ trait ClusterInfo extends Data {
       c.copy(settings = StreamApi.access.request.settings(settings).nodeNames(newNodeNames).creation.raw)
     case c: ShabondiClusterInfo =>
       c.copy(settings = ShabondiApi.access.request.settings(settings).nodeNames(newNodeNames).creation.raw)
+    case _: ClusterInfo => throw new UnsupportedOperationException("who are you?")
   }
 
   /**

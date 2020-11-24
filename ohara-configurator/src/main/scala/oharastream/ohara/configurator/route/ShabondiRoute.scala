@@ -40,6 +40,7 @@ private[configurator] object ShabondiRoute {
       val value = creation.shabondiClass match {
         case SHABONDI_SOURCE_CLASS_NAME => s"http://$nodeName:$clientPort/"
         case SHABONDI_SINK_CLASS_NAME   => s"http://$nodeName:$clientPort/groups/" + "${groupName}"
+        case _                          => throw new UnsupportedOperationException(s"${creation.shabondiClass} is unsupported")
       }
       val endpointItem = (ShabondiDefinitions.ENDPOINT_DEFINITION.key, JsString(value))
       new Creation(creation.raw + endpointItem)
@@ -61,6 +62,7 @@ private[configurator] object ShabondiRoute {
             (creation.shabondiClass match {
               case ShabondiApi.SHABONDI_SOURCE_CLASS_NAME => ShabondiDefinitions.sourceDefinitions
               case ShabondiApi.SHABONDI_SINK_CLASS_NAME   => ShabondiDefinitions.sinkDefinitions
+              case _                                      => throw new UnsupportedOperationException(s"${creation.shabondiClass} is unsupported")
             })
             // we should add definition having default value to complete Creation request but
             // TODO: we should check all definitions in Creation phase
@@ -111,6 +113,7 @@ private[configurator] object ShabondiRoute {
                       keepEditableFields(updating.raw, ShabondiApi.SOURCE_ALL_DEFINITIONS)
                     case ShabondiApi.SHABONDI_SINK_CLASS_NAME =>
                       keepEditableFields(updating.raw, ShabondiApi.SINK_ALL_DEFINITIONS)
+                    case _ => throw new UnsupportedOperationException(s"${previous.shabondiClass} is unsupported")
                   }
                 }
                 .key(key)
@@ -128,11 +131,13 @@ private[configurator] object ShabondiRoute {
       val checkTopics = clusterInfo.shabondiClass match {
         case ShabondiApi.SHABONDI_SOURCE_CLASS_NAME => clusterInfo.sourceToTopics
         case ShabondiApi.SHABONDI_SINK_CLASS_NAME   => clusterInfo.sinkFromTopics
+        case _                                      => throw new UnsupportedOperationException(s"${clusterInfo.shabondiClass} is unsupported")
       }
       if (checkTopics.isEmpty) {
         val key = clusterInfo.shabondiClass match {
           case ShabondiApi.SHABONDI_SOURCE_CLASS_NAME => ShabondiDefinitions.SOURCE_TO_TOPICS_DEFINITION.key
           case ShabondiApi.SHABONDI_SINK_CLASS_NAME   => ShabondiDefinitions.SINK_FROM_TOPICS_DEFINITION.key
+          case _                                      => throw new UnsupportedOperationException(s"${clusterInfo.shabondiClass} is unsupported")
         }
         throw new IllegalArgumentException(s"$key cannot be empty.")
       }

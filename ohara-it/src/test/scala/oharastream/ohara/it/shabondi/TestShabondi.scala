@@ -158,6 +158,7 @@ class TestShabondi extends IntegrationTest {
     shabondiClass match {
       case ShabondiApi.SHABONDI_SOURCE_CLASS => request.sourceToTopics(Set(topicKey))
       case ShabondiApi.SHABONDI_SINK_CLASS   => request.sinkFromTopics(Set(topicKey))
+      case _                                 => throw new UnsupportedOperationException(s"$shabondiClass is unsupported")
     }
     result(request.create())
   }

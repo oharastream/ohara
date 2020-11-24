@@ -19,7 +19,7 @@ ext {
   libs = [:]
 }
 def defaultScalaMinor = '2.13'
-def defaultScalaVersion = '2.13.3'
+def defaultScalaVersion = '2.13.4'
 versions["hadoop"] = project.hasProperty('hadoop.version') ? project.properties['hadoop.version'] : "2.10.1"
 versions["kafka"] = project.hasProperty('kafka.version') ? project.properties['kafka.version'] : "2.6.0"
 versions["postgresql"] = project.hasProperty('postgresql.version') ? project.properties['postgresql.version'] : "9.1-901-1.jdbc4"
@@ -28,7 +28,7 @@ versions["scala"] = project.hasProperty('scala.version') ? project.properties['s
 if (!versions["scala"].startsWith(defaultScalaMinor)) throw new GradleException("${versions["scala"]} is not supported. ohara requires scala $defaultScalaMinor")
   versions["akka"] = project.hasProperty('akka.version') ? project.properties['akka.version'] : "2.6.4"
 versions["akkaHttp"] = project.hasProperty('akka.http.version') ? project.properties['akka.http.version'] : "10.1.11"
-versions["scalatest"] = project.hasProperty('scalatest.version') ? project.properties['scalatest.version'] : "3.1.1"
+versions["scalatest"] = project.hasProperty('scalatest.version') ? project.properties['scalatest.version'] : "3.2.3"
 versions["junit"] = project.hasProperty('junit.version') ? project.properties['junit.version'] : "5.7.0"
 versions["javassist"] = project.hasProperty('javassist.version') ? project.properties['javassist.version'] : "3.27.0-GA"
 versions["slf4j"] = project.hasProperty('slf4j.version') ? project.properties['slf4j.version'] : "1.7.30"

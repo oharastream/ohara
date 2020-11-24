@@ -160,6 +160,7 @@ class TestStream extends IntegrationTest {
               case e: ExecutionException =>
                 e.getCause match {
                   case _: UnknownTopicOrPartitionException => false
+                  case t: Throwable                        => throw t
                 }
             }
           }

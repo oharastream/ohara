@@ -386,6 +386,7 @@ package object route {
                     error = None,
                     nodeMetrics = Map.empty
                   )
+                case _ => cluster
               }
             case Some(status) =>
               // no running cluster. It means no state and no dead nodes.
@@ -431,6 +432,7 @@ package object route {
                     lastModified = CommonUtils.current(),
                     nodeMetrics = meterCache.meters(c, c.key)
                   )
+                case _ => cluster
               }
           }
       )

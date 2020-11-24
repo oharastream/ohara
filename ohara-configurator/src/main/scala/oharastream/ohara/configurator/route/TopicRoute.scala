@@ -204,6 +204,7 @@ private[configurator] object TopicRoute {
       clusterInfo.shabondiClass match {
         case ShabondiApi.SHABONDI_SOURCE_CLASS_NAME => clusterInfo.sourceToTopics.contains(topicInfo.key)
         case ShabondiApi.SHABONDI_SINK_CLASS_NAME   => clusterInfo.sinkFromTopics.contains(topicInfo.key)
+        case _                                      => throw new UnsupportedOperationException(s"${clusterInfo.shabondiClass} is unsupported")
       }
     })
     if (conflictShabondis.nonEmpty)

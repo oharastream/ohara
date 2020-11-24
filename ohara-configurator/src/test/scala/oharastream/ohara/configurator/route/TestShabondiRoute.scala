@@ -519,6 +519,7 @@ class TestShabondiRoute extends OharaTest {
     shabondiClass match {
       case ShabondiApi.SHABONDI_SOURCE_CLASS => request.sourceToTopics(topicKeys)
       case ShabondiApi.SHABONDI_SINK_CLASS   => request.sinkFromTopics(topicKeys)
+      case _                                 => throw new UnsupportedOperationException(s"$shabondiClass is unsupported")
     }
     await(request.create())
   }
