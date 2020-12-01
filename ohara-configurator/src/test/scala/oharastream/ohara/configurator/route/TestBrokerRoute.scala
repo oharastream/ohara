@@ -634,8 +634,14 @@ class TestBrokerRoute extends OharaTest {
     result(brokerApi.start(broker.key))
     result(brokerApi.get(broker.key)).nodeNames shouldBe Set(nodeNames.head)
 
+    val invalidNode = CommonUtils.randomString()
+    an[IllegalArgumentException] should be thrownBy result(brokerApi.addNode(broker.key, invalidNode))
+    result(brokerApi.get(broker.key)).nodeNames shouldBe Set(nodeNames.head)
+    result(volumeApi.get(volume.key)).nodeNames shouldBe Set(nodeNames.head)
+
     result(brokerApi.addNode(broker.key, nodeNames.last))
     result(brokerApi.get(broker.key)).nodeNames shouldBe Set(nodeNames.head, nodeNames.last)
+    result(volumeApi.get(volume.key)).nodeNames shouldBe Set(nodeNames.head, nodeNames.last)
   }
 
   @AfterEach

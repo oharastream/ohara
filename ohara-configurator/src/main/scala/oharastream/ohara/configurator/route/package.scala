@@ -195,20 +195,26 @@ package object route {
         // 3) TODO: rollback the volume if it fails to deploy cluster (and remove following hard-code check)
         if (clusterInfo.isInstanceOf[ZookeeperClusterInfo])
           throw new UnsupportedOperationException(s"zookeeper collie doesn't support to add node to a running cluster")
-        Future
-          .traverse(clusterInfo.volumeMaps.keySet)(key => store.value[Volume](key))
-          .flatMap(Future.traverse(_)(volume => VolumeRoute.addNewNode(volume, newNode)))
+        objectChecker.checkList
+          .nodeName(newNode)
+          .check()
           .flatMap(
             _ =>
-              collie.creator
-                .settings(clusterInfo.settings)
-                .nodeName(newNode)
-                .threadPool(executionContext)
-                .create()
-                // we have to update the nodeNames of stored cluster info. Otherwise, the following Get/List request
-                // will see the out-of-date nodeNames
-                .flatMap(_ => store.add(clusterInfo.newNodeNames(clusterInfo.nodeNames + newNode)))
-                .flatMap(_ => Future.unit)
+              Future
+                .traverse(clusterInfo.volumeMaps.keySet)(key => store.value[Volume](key))
+                .flatMap(Future.traverse(_)(volume => VolumeRoute.addNewNode(volume, newNode)))
+                .flatMap(
+                  _ =>
+                    collie.creator
+                      .settings(clusterInfo.settings)
+                      .nodeName(newNode)
+                      .threadPool(executionContext)
+                      .create()
+                      // we have to update the nodeNames of stored cluster info. Otherwise, the following Get/List request
+                      // will see the out-of-date nodeNames
+                      .flatMap(_ => store.add(clusterInfo.newNodeNames(clusterInfo.nodeNames + newNode)))
+                      .flatMap(_ => Future.unit)
+                )
           )
       })
       .hookOfFinalDeleteAction(
