@@ -97,21 +97,25 @@ private abstract class BasicCollieImpl(
     routes: Map[String, String],
     arguments: Seq[String],
     volumeMaps: Map[Volume, String]
-  ): Future[Unit] =
-    containerClient.containerCreator
-      .imageName(containerInfo.imageName)
-      .portMappings(
-        containerInfo.portMappings.map(portMapping => portMapping.hostPort -> portMapping.containerPort).toMap
-      )
-      .hostname(containerInfo.hostname)
-      .envs(containerInfo.environments)
-      .name(containerInfo.name)
-      .routes(routes)
-      .arguments(arguments)
-      .nodeName(node.hostname)
-      .threadPool(executionContext)
-      .volumeMaps(volumeMaps.map(e => e._1.key.toPlain -> e._2))
-      .create()
+  ): Future[Unit] = {
+    implicit val pool: ExecutionContext = executionContext
+    actuallyVolumeMap(node, volumeMaps).flatMap { actuallyVolume =>
+      containerClient.containerCreator
+        .imageName(containerInfo.imageName)
+        .portMappings(
+          containerInfo.portMappings.map(portMapping => portMapping.hostPort -> portMapping.containerPort).toMap
+        )
+        .hostname(containerInfo.hostname)
+        .envs(containerInfo.environments)
+        .name(containerInfo.name)
+        .routes(routes)
+        .arguments(arguments)
+        .nodeName(node.hostname)
+        .threadPool(executionContext)
+        .volumeMaps(actuallyVolume.map(e => e._1.key.toPlain -> e._2))
+        .create()
+    }
+  }
 
   override protected def postCreate(
     clusterStatus: ClusterStatus,

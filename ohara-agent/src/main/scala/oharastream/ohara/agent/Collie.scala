@@ -19,7 +19,7 @@ package oharastream.ohara.agent
 import java.util.Objects
 
 import oharastream.ohara.agent.Collie.ClusterCreator
-import oharastream.ohara.agent.container.{ContainerClient, ContainerName}
+import oharastream.ohara.agent.container.{ContainerClient, ContainerName, ContainerVolume}
 import oharastream.ohara.client.configurator.BrokerApi.BrokerClusterInfo
 import oharastream.ohara.client.configurator.ContainerApi.ContainerInfo
 import oharastream.ohara.client.configurator.MetricsApi.{Meter, Metrics}
@@ -377,6 +377,54 @@ trait Collie {
     // TODO how could we fetch the error?...by Sam
     error = None
   )
+
+  /**
+    * Convert to actually volume name for the volume map from the containerClient
+    * @param node
+    * @param volumeMaps
+    * @param executionContext
+    * @return
+    */
+  protected def actuallyVolumeMap(node: Node, volumeMaps: Map[Volume, String])(
+    implicit executionContext: ExecutionContext
+  ): Future[Map[Volume, String]] =
+    containerClient
+      .volumes()
+      .map { volumes =>
+        volumeMaps.map[Volume, String] {
+          case (key: Volume, value: String) =>
+            (
+              volumes
+                .filter(volume => volume.name.split("-").length == 3) // ${ClusterName}-${VolumeName}-${Hash}
+                .map(
+                  volume =>
+                    ContainerVolume(containerVolumeName(volume.name), volume.driver, volume.path, volume.nodeName)
+                )
+                .find(volume => volume.nodeName == node.name && prefixNameEqualsKey(volume.name, key.name))
+                .map(
+                  volume =>
+                    Volume(
+                      group = key.group,
+                      name = volume.name,
+                      nodeNames = key.nodeNames,
+                      path = key.path,
+                      state = key.state,
+                      error = key.error,
+                      tags = key.tags,
+                      lastModified = key.lastModified
+                    )
+                )
+                .getOrElse(throw new IllegalArgumentException(s"${key.name} volume is not found!")),
+              value
+            )
+        }
+      }
+
+  private[this] def containerVolumeName(name: String): String = {
+    val splits = name.split("-")
+    s"${splits(1)}-${splits(2)}" // The name variable value is ${group}-${name}-${hash} convert to ${name}-${hash}
+  }
+  private[this] def prefixNameEqualsKey(name: String, key: String): Boolean = name.startsWith(key)
 }
 
 object Collie {

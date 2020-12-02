@@ -230,7 +230,7 @@ abstract class ServiceCollie extends Releasable {
     containerClient
       .volumes()
       .map(_.flatMap { volume =>
-        ObjectKey.ofPlain(clusterVolumeName(volume.name)).asScala match {
+        ObjectKey.ofPlain(clusterVolumeName(volume.name).getOrElse("")).asScala match {
           case None => None
           case Some(key) =>
             Some(
@@ -289,12 +289,14 @@ abstract class ServiceCollie extends Releasable {
       .flatMap(Future.traverse(_)(containerClient.removeVolumes(_)))
       .map(_ => ())
 
-  private[this] def hashVolumeName(key: ObjectKey): String = s"${key.toPlain}-${CommonUtils.randomString(5)}"
-  private[this] def clusterVolumeName(name: String): String = {
-    val splits = name.split("-")
-    s"${splits(0)}-${splits(1)}" // The name variable value is ${group}-${name}-${hash} convert to ${group}-${name}
-  }
   private[this] def prefixNameEqualsKey(name: String, key: String): Boolean = name.startsWith(key)
+  private[this] def hashVolumeName(key: ObjectKey): String                  = s"${key.toPlain}-${CommonUtils.randomString(5)}"
+  private[this] def clusterVolumeName(name: String): Option[String] = {
+    val splits = name.split("-")
+    if (splits.length == 3)
+      Option(s"${splits(0)}-${splits(1)}") // The name variable value is ${group}-${name}-${hash} convert to ${group}-${name}
+    else Option.empty
+  }
 }
 
 object ServiceCollie {

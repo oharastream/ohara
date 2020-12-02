@@ -22,7 +22,8 @@ import java.util.concurrent.TimeUnit
 
 import com.typesafe.scalalogging.Logger
 import oharastream.ohara.client.configurator.BrokerApi.BrokerClusterInfo
-import oharastream.ohara.client.configurator.ClusterInfo
+import oharastream.ohara.client.configurator.{ClusterInfo, ClusterState}
+import oharastream.ohara.client.configurator.VolumeApi.{Volume, VolumeState}
 import oharastream.ohara.client.configurator.WorkerApi.WorkerClusterInfo
 import oharastream.ohara.client.configurator.ZookeeperApi.ZookeeperClusterInfo
 import oharastream.ohara.client.kafka.ConnectorAdmin
@@ -82,13 +83,33 @@ class TestCollie extends IntegrationTest {
   private[this] def testZookeeperBrokerWorker(clusterCount: Int, resourceRef: ResourceRef): Unit = {
     val zookeeperClusterInfos = (0 until clusterCount).map(_ => testZookeeper(resourceRef))
     try {
-      val brokerClusterInfos = zookeeperClusterInfos.map(cluster => testBroker(cluster, resourceRef))
+      val brokerClusterInfos = zookeeperClusterInfos.map { cluster =>
+        val volumeName = s"bkvolume${CommonUtils.randomString(5)}"
+        checkVolumeNotExists(resourceRef, Seq(volumeName))
+        val bkVolumes = Set(
+          result(
+            resourceRef.volumeApi.request
+              .key(resourceRef.generateObjectKey)
+              .name(volumeName)
+              .nodeNames(Set(resourceRef.nodeNames.head))
+              .path(s"/tmp/${CommonUtils.randomString(10)}")
+              .create()
+          )
+        )
+        bkVolumes.foreach { bkVolume =>
+          result(resourceRef.volumeApi.start(bkVolume.key))
+          await(() => result(resourceRef.volumeApi.get(bkVolume.key)).state.contains(VolumeState.RUNNING))
+        }
+        testBroker(cluster, resourceRef, bkVolumes)
+      }
       try {
         val workerClusterInfos = brokerClusterInfos.map(cluster => testWorker(cluster, resourceRef))
         try testNodeServices(zookeeperClusterInfos ++ brokerClusterInfos ++ workerClusterInfos, resourceRef)
         finally workerClusterInfos.foreach(cluster => testStopWorker(cluster, resourceRef))
       } finally brokerClusterInfos.foreach(cluster => testStopBroker(cluster, resourceRef))
-    } finally zookeeperClusterInfos.foreach(cluster => testStopZookeeper(cluster, resourceRef))
+    } finally zookeeperClusterInfos.foreach { cluster =>
+      testStopZookeeper(cluster, resourceRef)
+    }
   }
 
   private[this] def testNodeServices(clusterInfos: Seq[ClusterInfo], resourceRef: ResourceRef): Unit = {
@@ -204,7 +225,8 @@ class TestCollie extends IntegrationTest {
 
   private[this] def testBroker(
     zookeeperClusterInfo: ZookeeperClusterInfo,
-    resourceRef: ResourceRef
+    resourceRef: ResourceRef,
+    volumes: Set[Volume]
   ): BrokerClusterInfo = {
     log.info("[BROKER] start to run broker cluster")
     val clusterKey = resourceRef.generateObjectKey
@@ -220,7 +242,6 @@ class TestCollie extends IntegrationTest {
       brokerCluster.jmxPort shouldBe jmxPort
       brokerCluster
     }
-
     val brokerClusterInfo = assert(
       result(
         resourceRef.brokerApi.request
@@ -229,6 +250,7 @@ class TestCollie extends IntegrationTest {
           .jmxPort(jmxPort)
           .zookeeperClusterKey(zookeeperClusterInfo.key)
           .nodeName(nodeName)
+          .logDirs(volumes.map(_.key))
           .create()
       )
     )
@@ -274,18 +296,25 @@ class TestCollie extends IntegrationTest {
   }
 
   private[this] def testStopBroker(brokerClusterInfo: BrokerClusterInfo, resourceRef: ResourceRef): Unit = {
-    result(resourceRef.brokerApi.stop(brokerClusterInfo.key))
-    await(() => {
-      // In configurator mode: clusters() will return the "stopped list" in normal case
-      // In collie mode: clusters() will return the "cluster list except stop one" in normal case
-      // we should consider these two cases by case...
-      val clusters = result(resourceRef.brokerApi.list())
-      !clusters
-        .map(_.key)
-        .contains(brokerClusterInfo.key) || clusters.find(_.key == brokerClusterInfo.key).get.state.isEmpty
-    })
-    // the cluster is stopped actually, delete the data
-    result(resourceRef.brokerApi.delete(brokerClusterInfo.key))
+    try {
+      result(resourceRef.brokerApi.stop(brokerClusterInfo.key))
+      await(() => {
+        // In configurator mode: clusters() will return the "stopped list" in normal case
+        // In collie mode: clusters() will return the "cluster list except stop one" in normal case
+        // we should consider these two cases by case...
+        val clusters = result(resourceRef.brokerApi.list())
+        !clusters
+          .map(_.key)
+          .contains(brokerClusterInfo.key) || clusters.find(_.key == brokerClusterInfo.key).get.state.isEmpty
+      })
+      // the cluster is stopped actually, delete the data
+      result(resourceRef.brokerApi.delete(brokerClusterInfo.key))
+    } finally {
+      brokerClusterInfo.volumeMaps.keys.foreach { objectKey =>
+        result(resourceRef.volumeApi.stop(objectKey))   // Stop broker volume
+        result(resourceRef.volumeApi.delete(objectKey)) // Delete broker volume
+      }
+    }
   }
 
   private[this] def testAddNodeToRunningBrokerCluster(
@@ -310,11 +339,20 @@ class TestCollie extends IntegrationTest {
         )
         val newNode = freeNodes.head
         log.info(s"[BROKER] add new node:$newNode to cluster:${previousCluster.key}")
+
+        previousCluster.volumeMaps.keys.foreach { key =>
+          await { () =>
+            result(resourceRef.volumeApi.addNode(key, newNode))
+            result(resourceRef.volumeApi.get(key)).state.contains(VolumeState.RUNNING) &&
+            result(resourceRef.volumeApi.get(key)).nodeNames.contains(newNode)
+          }
+        }
         val newCluster = result(
           resourceRef.brokerApi
             .addNode(previousCluster.key, newNode)
             .flatMap(_ => resourceRef.brokerApi.get(previousCluster.key))
         )
+        await(() => newCluster.state.contains(ClusterState.RUNNING))
         log.info(s"[BROKER] add new node:$newNode to cluster:${previousCluster.key}...done")
         newCluster.key shouldBe previousCluster.key
         newCluster.imageName shouldBe previousCluster.imageName

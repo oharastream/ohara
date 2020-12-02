@@ -18,7 +18,6 @@ package oharastream.ohara.agent.container
 
 /**
   * @param name volume name
-  * @param fullName The fullName is volume name with random string. Avoid the volume name conflict.
   * @param driver volume driver. For example, local, nfs or tmpFs.
   * @param path the path on the driver.
   * @param nodeName the node hosting this volume
