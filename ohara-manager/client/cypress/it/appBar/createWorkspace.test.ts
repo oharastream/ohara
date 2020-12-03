@@ -205,9 +205,7 @@ describe('Create Workspace', () => {
   });
 
   context('Volume', () => {
-    // FIXME: This test is currently failing due to Backend API issue
-    // Re-enable this after Backend issue is resolved. See #5798
-    it.skip('should able to add a volume', () => {
+    it('should able to add a volume', () => {
       const workspaceName = generate.serviceName({ prefix: 'ws' });
       const volumePath = '/home/ohara/workspace1';
       cy.visit('/');
