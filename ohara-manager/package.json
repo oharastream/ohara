@@ -1,6 +1,6 @@
 {
   "name": "ohara-manager",
-  "version": "0.12.0-SNAPSHOT",
+  "version": "0.13.0-SNAPSHOT",
   "private": true,
   "main": "start.js",
   "engines": {
