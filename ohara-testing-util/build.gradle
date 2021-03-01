@@ -26,6 +26,7 @@ dependencies {
     exclude group: 'org.apache.sshd', module: 'sshd-netty'
     exclude group: 'org.slf4j', module: 'slf4j-jdk14'
   }
+  implementation libs.zookeeper
   implementation libs.kafkaCore
   implementation libs.kafkaConnectJson
   implementation libs.kafkaConnectRuntime

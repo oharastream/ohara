@@ -30,6 +30,8 @@ dependencies {
   implementation project(":ohara-stream")
   implementation project(":ohara-shabondi")
   implementation project(":ohara-metrics")
+  implementation libs.reflections
+  implementation libs.rocksDBJni
   implementation libs.scalaJava8Compat
   implementation libs.scalaLibrary
   implementation libs.scalaReflect

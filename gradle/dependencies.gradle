@@ -15,8 +15,8 @@
  */
 
 ext {
-  versions = [:]
-  libs = [:]
+    versions = [:]
+    libs = [:]
 }
 def defaultScalaMinor = '2.13'
 def defaultScalaVersion = '2.13.4'
@@ -26,7 +26,7 @@ versions["postgresql"] = project.hasProperty('postgresql.version') ? project.pro
 versions["mockito"] = project.hasProperty('mockito.version') ? project.properties['mockito.version'] : "1.10.19"
 versions["scala"] = project.hasProperty('scala.version') ? project.properties['scala.version'] : defaultScalaVersion
 if (!versions["scala"].startsWith(defaultScalaMinor)) throw new GradleException("${versions["scala"]} is not supported. ohara requires scala $defaultScalaMinor")
-  versions["akka"] = project.hasProperty('akka.version') ? project.properties['akka.version'] : "2.6.4"
+versions["akka"] = project.hasProperty('akka.version') ? project.properties['akka.version'] : "2.6.4"
 versions["akkaHttp"] = project.hasProperty('akka.http.version') ? project.properties['akka.http.version'] : "10.1.11"
 versions["scalatest"] = project.hasProperty('scalatest.version') ? project.properties['scalatest.version'] : "3.2.3"
 versions["junit"] = project.hasProperty('junit.version') ? project.properties['junit.version'] : "5.7.0"
@@ -41,39 +41,55 @@ versions["sshd"] = project.hasProperty('sshd.version') ? project.properties['ssh
 // commonIo has been included by apache hadoop so we use the identical version
 versions["guava"] = project.hasProperty('guava.version') ? project.properties['guava.version'] : "29.0-jre"
 versions["smbj"] = project.hasProperty('smbj.version') ? project.properties['smbj.version'] : "0.10.0"
+versions["commonLang3"] = project.hasProperty('commonLang3.version') ? project.properties['commonLang3.version'] : "3.11"
+versions["jackson"] = project.hasProperty('jackson.version') ? project.properties['jackson.version'] : "2.10.5"
+versions["jacksonDatabind"] = project.hasProperty('jacksonDatabind.version') ? project.properties['jacksonDatabind.version'] : "2.10.5.1"
+versions["reflections"] = project.hasProperty('reflections.version') ? project.properties['reflections.version'] : "0.9.12"
+versions["rocksDB"] = project.hasProperty('rocksDB.version') ? project.properties['rocksDB.version'] : "5.18.4"
+versions["zookeeper"] = project.hasProperty('zookeeper.version') ? project.properties['zookeeper.version'] : "3.5.9"
 libs += [
-  postgresql         : "postgresql:postgresql:$versions.postgresql",
-  kafkaCore          : "org.apache.kafka:kafka_$defaultScalaMinor:$versions.kafka",
-  kafkaClient        : "org.apache.kafka:kafka-clients:$versions.kafka",
-  kafkaConnectApi    : "org.apache.kafka:connect-api:$versions.kafka",
-  kafkaConnectFile   : "org.apache.kafka:connect-file:$versions.kafka",
-  kafkaConnectRuntime: "org.apache.kafka:connect-runtime:$versions.kafka",
-  kafkaConnectJson   : "org.apache.kafka:connect-json:$versions.kafka",
-  kafkaStreams       : "org.apache.kafka:kafka-streams:$versions.kafka",
-  akkaTestKit        : "com.typesafe.akka:akka-testkit_$defaultScalaMinor:$versions.akka",
-  akkaStream         : "com.typesafe.akka:akka-stream_$defaultScalaMinor:$versions.akka",
-  akkaHttp           : "com.typesafe.akka:akka-http_$defaultScalaMinor:$versions.akkaHttp",
-  akkaHttpTestKit    : "com.typesafe.akka:akka-http-testkit_$defaultScalaMinor:$versions.akkaHttp",
-  akkaHttpSprayJson  : "com.typesafe.akka:akka-http-spray-json_$defaultScalaMinor:$versions.akkaHttp",
-  akkaSlf4j          : "com.typesafe.akka:akka-slf4j_$defaultScalaMinor:$versions.akka",
-  scalaLibrary       : "org.scala-lang:scala-library:$versions.scala",
-  scalaReflect       : "org.scala-lang:scala-reflect:$versions.scala",
-  scalaJava8Compat   : "org.scala-lang.modules:scala-java8-compat_$defaultScalaMinor:$versions.scalaJava8Compat",
-  slf4jApi           : "org.slf4j:slf4j-api:$versions.slf4j",
-  slf4jLog4j         : "org.slf4j:slf4j-log4j12:$versions.slf4j",
-  hadoopCommon       : "org.apache.hadoop:hadoop-common:$versions.hadoop",
-  hadoopHDFS         : "org.apache.hadoop:hadoop-hdfs:$versions.hadoop",
-  scalatest          : "org.scalatest:scalatest_$defaultScalaMinor:$versions.scalatest",
-  scalaLogging       : "com.typesafe.scala-logging:scala-logging_$defaultScalaMinor:$versions.scalaLogging",
-  mockitoAll         : "org.mockito:mockito-all:$versions.mockito",
-  junitApi           : "org.junit.jupiter:junit-jupiter-api:$versions.junit",
-  junitEngine        : "org.junit.jupiter:junit-jupiter-engine:$versions.junit",
-  junitParams        : "org.junit.jupiter:junit-jupiter-params:$versions.junit",
-  javassist          : "org.javassist:javassist:$versions.javassist",
-  embeddedsql        : "com.wix:wix-embedded-mysql:$versions.embeddedsql",
-  mysql              : "mysql:mysql-connector-java:$versions.mysql",
-  ftpServer          : "org.apache.ftpserver:ftpserver-core:$versions.ftpServer",
-  sshd               : "org.apache.sshd:apache-sshd:$versions.sshd",
-  guava              : "com.google.guava:guava:$versions.guava",
-  smbj               : "com.hierynomus:smbj:$versions.smbj"
+  postgresql              : "postgresql:postgresql:$versions.postgresql",
+  kafkaCore               : "org.apache.kafka:kafka_$defaultScalaMinor:$versions.kafka",
+  kafkaClient             : "org.apache.kafka:kafka-clients:$versions.kafka",
+  kafkaConnectApi         : "org.apache.kafka:connect-api:$versions.kafka",
+  kafkaConnectFile        : "org.apache.kafka:connect-file:$versions.kafka",
+  kafkaConnectRuntime     : "org.apache.kafka:connect-runtime:$versions.kafka",
+  kafkaConnectJson        : "org.apache.kafka:connect-json:$versions.kafka",
+  kafkaStreams            : "org.apache.kafka:kafka-streams:$versions.kafka",
+  akkaTestKit             : "com.typesafe.akka:akka-testkit_$defaultScalaMinor:$versions.akka",
+  akkaStream              : "com.typesafe.akka:akka-stream_$defaultScalaMinor:$versions.akka",
+  akkaHttp                : "com.typesafe.akka:akka-http_$defaultScalaMinor:$versions.akkaHttp",
+  akkaHttpTestKit         : "com.typesafe.akka:akka-http-testkit_$defaultScalaMinor:$versions.akkaHttp",
+  akkaHttpSprayJson       : "com.typesafe.akka:akka-http-spray-json_$defaultScalaMinor:$versions.akkaHttp",
+  akkaSlf4j               : "com.typesafe.akka:akka-slf4j_$defaultScalaMinor:$versions.akka",
+  scalaLibrary            : "org.scala-lang:scala-library:$versions.scala",
+  scalaReflect            : "org.scala-lang:scala-reflect:$versions.scala",
+  scalaJava8Compat        : "org.scala-lang.modules:scala-java8-compat_$defaultScalaMinor:$versions.scalaJava8Compat",
+  slf4jApi                : "org.slf4j:slf4j-api:$versions.slf4j",
+  slf4jLog4j              : "org.slf4j:slf4j-log4j12:$versions.slf4j",
+  hadoopCommon            : "org.apache.hadoop:hadoop-common:$versions.hadoop",
+  hadoopHDFS              : "org.apache.hadoop:hadoop-hdfs:$versions.hadoop",
+  scalatest               : "org.scalatest:scalatest_$defaultScalaMinor:$versions.scalatest",
+  scalaLogging            : "com.typesafe.scala-logging:scala-logging_$defaultScalaMinor:$versions.scalaLogging",
+  mockitoAll              : "org.mockito:mockito-all:$versions.mockito",
+  junitApi                : "org.junit.jupiter:junit-jupiter-api:$versions.junit",
+  junitEngine             : "org.junit.jupiter:junit-jupiter-engine:$versions.junit",
+  junitParams             : "org.junit.jupiter:junit-jupiter-params:$versions.junit",
+  javassist               : "org.javassist:javassist:$versions.javassist",
+  embeddedsql             : "com.wix:wix-embedded-mysql:$versions.embeddedsql",
+  mysql                   : "mysql:mysql-connector-java:$versions.mysql",
+  ftpServer               : "org.apache.ftpserver:ftpserver-core:$versions.ftpServer",
+  sshd                    : "org.apache.sshd:apache-sshd:$versions.sshd",
+  guava                   : "com.google.guava:guava:$versions.guava",
+  smbj                    : "com.hierynomus:smbj:$versions.smbj",
+  commonLang3             : "org.apache.commons:commons-lang3:$versions.commonLang3",
+  jacksonAnnotations      : "com.fasterxml.jackson.core:jackson-annotations:$versions.jackson",
+  jacksonJaxrsJsonProvider: "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:$versions.jackson",
+  jacksonDatabind         : "com.fasterxml.jackson.core:jackson-databind:$versions.jacksonDatabind",
+  jacksonDataformatCsv    : "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:$versions.jackson",
+  jacksonModuleScala      : "com.fasterxml.jackson.module:jackson-module-scala_$versions.baseScala:$versions.jackson",
+  jacksonJDK8Datatypes    : "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$versions.jackson",
+  reflections             : "org.reflections:reflections:$versions.reflections",
+  rocksDBJni              : "org.rocksdb:rocksdbjni:$versions.rocksDB",
+  zookeeper               : "org.apache.zookeeper:zookeeper:$versions.zookeeper"
 ]
